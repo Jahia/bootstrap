@@ -86,8 +86,8 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <mkdir dir="${basedir}/src/main/import/content/modules/bootstrap/files" />
-                                <copy file="${basedir}/src/main/resources/less/variables.less" toDir="${basedir}/src/main/import/content/modules/bootstrap/files" />
+                                <mkdir dir="${basedir}/src/main/import/content/modules/bootstrap/files/variables.less" />
+                                <copy file="${basedir}/src/main/resources/less/variables.less" toDir="${basedir}/src/main/import/content/modules/bootstrap/files/variables.less" />
                             </tasks>
                         </configuration>
                     </execution>
