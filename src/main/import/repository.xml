@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<content xmlns:j="http://www.jahia.org/jahia/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
+    <modules jcr:primaryType="jnt:modules">
+        <bootstrap j:dependencies="default siteSettings"
+                 j:moduleType="module"
+                 j:title="bootstrap"
+                 jcr:primaryType="jnt:module">
+                <portlets jcr:primaryType="jnt:portletFolder"/>
+                <files jcr:primaryType="jnt:folder">
+                    <variables.less jcr:primaryType="jnt:file">
+                        <jcr:content jcr:mimeType="text/x-less" jcr:primaryType="jnt:resource"/>
+                    </variables.less>
+                </files>
+                <contents jcr:primaryType="jnt:contentFolder"/>
+                <templates j:rootTemplatePath="/base" jcr:primaryType="jnt:templatesFolder">
+                    <siteSettingsBase j:view="siteSettings"
+                                      jcr:mixinTypes="jmix:useUILocale"
+                                      jcr:primaryType="jnt:template">
+                        <bootstrapCustomization j:applyOn="jnt:virtualsite"
+                                             j:defaultTemplate="false"
+                                             j:hiddenTemplate="true"
+                                             j:priority="100"
+                                             j:requiredPermissions="#/permissions/admin/adminBootstrapCustomization"
+                                             j:titleKey="siteSettings.label.bootstrap"
+                                             jcr:mixinTypes="jmix:rbTitle"
+                                             jcr:primaryType="jnt:contentTemplate">
+                            <pagecontent jcr:primaryType="jnt:contentList">
+                                <editLessVariables jcr:primaryType="jnt:editLessVariables"/>
+                            </pagecontent>
+                        </bootstrapCustomization>
+                    </siteSettingsBase>
+                </templates>
+            </bootstrap>
+    </modules>
+</content>
