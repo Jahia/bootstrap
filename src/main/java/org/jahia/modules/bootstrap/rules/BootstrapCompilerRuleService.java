@@ -43,60 +43,62 @@ package org.jahia.modules.bootstrap.rules;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.drools.spi.KnowledgeHelper;
-import org.jahia.data.templates.JahiaTemplatesPackage;
-import org.jahia.modules.bootstrap.Constants;
 import org.jahia.services.content.JCRNodeWrapper;
-import org.jahia.services.content.JCRSessionWrapper;
 import org.jahia.services.content.rules.AddedNodeFact;
-import org.jahia.services.templates.JahiaModuleAware;
 import org.lesscss.LessCompiler;
 import org.lesscss.LessException;
 
+import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
-public class BootstrapCompilerRuleService implements JahiaModuleAware {
+public class BootstrapCompilerRuleService {
 
-    private JahiaTemplatesPackage module;
+    public static final String BOOTSTRAP_CSS = "bootstrap.css";
+    public static final String BOOTSTRAP_RESPONSIVE_CSS = "bootstrap-responsive.css";
+    public static final String CSS_FOLDER = "css";
 
     private LessCompiler lessCompiler;
 
     public void compile(AddedNodeFact nodeFact, KnowledgeHelper drools) throws RepositoryException, IOException, LessException {
-        JCRNodeWrapper lessVariables = nodeFact.getNode();
-        File lessFolder = new File(FileUtils.getTempDirectory(), "less-" + System.currentTimeMillis());
-        lessFolder.mkdir();
-        for (org.springframework.core.io.Resource r : module.getResources("less")) {
-            String filename = r.getFilename();
-            InputStream is;
-            if (Constants.VARIABLES_LESS.equals(filename)) {
-                is = lessVariables.getFileContent().downloadFile();
-            } else {
-                is = r.getInputStream();
-            }
-            IOUtils.copy(is, new FileOutputStream(new File(lessFolder, filename)));
+        JCRNodeWrapper node = nodeFact.getNode();
+        File tmpLessFolder = new File(FileUtils.getTempDirectory(), "less-" + System.currentTimeMillis());
+        tmpLessFolder.mkdir();
+        JCRNodeWrapper lessFolder = node.getParent();
+        NodeIterator nodes = lessFolder.getNodes();
+        while (nodes.hasNext()) {
+            JCRNodeWrapper n = (JCRNodeWrapper) nodes.nextNode();
+            IOUtils.copy(n.getFileContent().downloadFile(), new FileOutputStream(new File(tmpLessFolder, n.getName())));
         }
-        File bootstrapCss = new File(lessFolder, Constants.BOOTSTRAP_CSS);
-        lessCompiler.compile(new File(lessFolder, "bootstrap.less"), bootstrapCss);
-        JCRNodeWrapper files = lessVariables.getParent();
+        File bootstrapCss = new File(tmpLessFolder, BOOTSTRAP_CSS);
+        lessCompiler.compile(new File(tmpLessFolder, "bootstrap.less"), bootstrapCss);
+        File responsiveCss = new File(tmpLessFolder, BOOTSTRAP_RESPONSIVE_CSS);
+        lessCompiler.compile(new File(tmpLessFolder, "responsive.less"), responsiveCss);
+        JCRNodeWrapper files = lessFolder.getParent();
         JCRNodeWrapper cssFolder;
-        if (files.hasNode(Constants.CSS_FOLDER)) {
-            cssFolder = files.getNode(Constants.CSS_FOLDER);
+        if (files.hasNode(CSS_FOLDER)) {
+            cssFolder = files.getNode(CSS_FOLDER);
         } else {
-            cssFolder = files.addNode(Constants.CSS_FOLDER, "jnt:folder");
+            cssFolder = files.addNode(CSS_FOLDER, "jnt:folder");
         }
         JCRNodeWrapper bootstrapCssNode;
-        if (cssFolder.hasNode(Constants.BOOTSTRAP_CSS)) {
-            bootstrapCssNode = cssFolder.getNode(Constants.BOOTSTRAP_CSS);
+        if (cssFolder.hasNode(BOOTSTRAP_CSS)) {
+            bootstrapCssNode = cssFolder.getNode(BOOTSTRAP_CSS);
         } else {
-            bootstrapCssNode = cssFolder.addNode(Constants.BOOTSTRAP_CSS, "jnt:file");
+            bootstrapCssNode = cssFolder.addNode(BOOTSTRAP_CSS, "jnt:file");
         }
         bootstrapCssNode.getFileContent().uploadFile(new FileInputStream(bootstrapCss), "text/css");
-        lessVariables.getSession().save();
-    }
-
-    @Override
-    public void setJahiaModule(JahiaTemplatesPackage module) {
-        this.module = module;
+        JCRNodeWrapper responsiveCssNode;
+        if (cssFolder.hasNode(BOOTSTRAP_RESPONSIVE_CSS)) {
+            responsiveCssNode = cssFolder.getNode(BOOTSTRAP_RESPONSIVE_CSS);
+        } else {
+            responsiveCssNode = cssFolder.addNode(BOOTSTRAP_RESPONSIVE_CSS, "jnt:file");
+        }
+        responsiveCssNode.getFileContent().uploadFile(new FileInputStream(responsiveCss), "text/css");
+        node.getSession().save();
     }
 
     public void setLessCompiler(LessCompiler lessCompiler) {

@@ -42,56 +42,31 @@ package org.jahia.modules.bootstrap.actions;
 
 import org.jahia.bin.Action;
 import org.jahia.bin.ActionResult;
-import org.jahia.data.templates.JahiaTemplatesPackage;
-import org.jahia.modules.bootstrap.Constants;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.JCRSessionWrapper;
 import org.jahia.services.render.RenderContext;
 import org.jahia.services.render.Resource;
 import org.jahia.services.render.URLResolver;
-import org.jahia.services.templates.JahiaModuleAware;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-public class UpdateVariablesActions extends Action implements JahiaModuleAware {
-
-    private JahiaTemplatesPackage module;
+public class UpdateVariablesActions extends Action {
 
     @Override
     public ActionResult doExecute(HttpServletRequest request, RenderContext renderContext, Resource resource,
                                   JCRSessionWrapper session, Map<String, List<String>> parameters,
                                   URLResolver urlResolver) throws Exception {
         List<String> variables = parameters.get("variables");
-        List<String> reset = parameters.get("reset");
-        if (variables == null && reset == null) {
+        if (variables == null || variables.isEmpty()) {
             return ActionResult.BAD_REQUEST;
         }
-        JCRNodeWrapper files = renderContext.getSite().getNode("files");
-            JCRNodeWrapper lessVariables;
-        if (files.hasNode(Constants.VARIABLES_LESS)) {
-            lessVariables = files.getNode(Constants.VARIABLES_LESS);
-        } else {
-            lessVariables = files.addNode(Constants.VARIABLES_LESS, "jnt:file");
-        }
-        InputStream inputStream = null;
-        if (reset != null && !reset.isEmpty() && "true".equals(reset.get(0))) {
-            inputStream = module.getResource("less/" + Constants.VARIABLES_LESS).getInputStream();
-        } else if (variables != null && !variables.isEmpty()) {
-            inputStream = new ByteArrayInputStream(variables.get(0).getBytes("UTF-8"));
-        }
-        if (inputStream != null) {
-            lessVariables.getFileContent().uploadFile(inputStream, "text/x-less");
-        }
+        JCRNodeWrapper lessVariables = renderContext.getSite().getNode("files/less/variables.less");
+        lessVariables.getFileContent().uploadFile(new ByteArrayInputStream(variables.get(0).getBytes("UTF-8")), "text/x-less");
         session.save();
         return ActionResult.OK;
     }
 
-    @Override
-    public void setJahiaModule(JahiaTemplatesPackage module) {
-        this.module = module;
-    }
 }
