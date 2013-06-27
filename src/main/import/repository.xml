@@ -7,6 +7,14 @@
                  jcr:primaryType="jnt:module">
                 <portlets jcr:primaryType="jnt:portletFolder"/>
                 <files jcr:primaryType="jnt:folder">
+                   <img jcr:primaryType="jnt:folder">
+                       <glyphicons-halflings.png jcr:primaryType="jnt:file">
+                           <jcr:content jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
+                       </glyphicons-halflings.png>
+                       <glyphicons-halflings-white.png jcr:primaryType="jnt:file">
+                           <jcr:content jcr:mimeType="image/pngless" jcr:primaryType="jnt:resource"/>
+                       </glyphicons-halflings-white.png>
+                   </img>
                     <variables.less jcr:primaryType="jnt:file">
                         <jcr:content jcr:mimeType="text/x-less" jcr:primaryType="jnt:resource"/>
                     </variables.less>

@@ -12,3 +12,13 @@ global User user
 global Service service
 global Logger logger
 global JCRContentUtils jcrUtils
+global BootstrapCompilerRuleService bootstrapCompiler
+
+rule "Compile Bootstrap"
+  when
+    A file content has been modified
+      - its path matches /sites/[\\p{Alnum}\\-_]+/files/variables.less
+    The node has a parent
+  then
+    Compile the parent to css
+end

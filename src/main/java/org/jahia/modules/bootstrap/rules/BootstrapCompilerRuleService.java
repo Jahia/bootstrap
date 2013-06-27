@@ -38,60 +38,68 @@
  * please contact the sales department at sales@jahia.com.
  */
 
-package org.jahia.modules.bootstrap.actions;
+package org.jahia.modules.bootstrap.rules;
 
-import org.jahia.bin.Action;
-import org.jahia.bin.ActionResult;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.drools.spi.KnowledgeHelper;
 import org.jahia.data.templates.JahiaTemplatesPackage;
 import org.jahia.modules.bootstrap.Constants;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.JCRSessionWrapper;
-import org.jahia.services.render.RenderContext;
-import org.jahia.services.render.Resource;
-import org.jahia.services.render.URLResolver;
+import org.jahia.services.content.rules.AddedNodeFact;
 import org.jahia.services.templates.JahiaModuleAware;
+import org.lesscss.LessCompiler;
+import org.lesscss.LessException;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
+import javax.jcr.RepositoryException;
+import java.io.*;
 
-public class UpdateVariablesActions extends Action implements JahiaModuleAware {
+public class BootstrapCompilerRuleService implements JahiaModuleAware {
 
     private JahiaTemplatesPackage module;
 
-    @Override
-    public ActionResult doExecute(HttpServletRequest request, RenderContext renderContext, Resource resource,
-                                  JCRSessionWrapper session, Map<String, List<String>> parameters,
-                                  URLResolver urlResolver) throws Exception {
-        List<String> variables = parameters.get("variables");
-        List<String> reset = parameters.get("reset");
-        if (variables == null && reset == null) {
-            return ActionResult.BAD_REQUEST;
+    private LessCompiler lessCompiler;
+
+    public void compile(AddedNodeFact nodeFact, KnowledgeHelper drools) throws RepositoryException, IOException, LessException {
+        JCRNodeWrapper lessVariables = nodeFact.getNode();
+        File lessFolder = new File(FileUtils.getTempDirectory(), "less-" + System.currentTimeMillis());
+        lessFolder.mkdir();
+        for (org.springframework.core.io.Resource r : module.getResources("less")) {
+            String filename = r.getFilename();
+            InputStream is;
+            if (Constants.VARIABLES_LESS.equals(filename)) {
+                is = lessVariables.getFileContent().downloadFile();
+            } else {
+                is = r.getInputStream();
+            }
+            IOUtils.copy(is, new FileOutputStream(new File(lessFolder, filename)));
         }
-        JCRNodeWrapper files = renderContext.getSite().getNode("files");
-            JCRNodeWrapper lessVariables;
-        if (files.hasNode(Constants.VARIABLES_LESS)) {
-            lessVariables = files.getNode(Constants.VARIABLES_LESS);
+        File bootstrapCss = new File(lessFolder, Constants.BOOTSTRAP_CSS);
+        lessCompiler.compile(new File(lessFolder, "bootstrap.less"), bootstrapCss);
+        JCRNodeWrapper files = lessVariables.getParent();
+        JCRNodeWrapper cssFolder;
+        if (files.hasNode(Constants.CSS_FOLDER)) {
+            cssFolder = files.getNode(Constants.CSS_FOLDER);
         } else {
-            lessVariables = files.addNode(Constants.VARIABLES_LESS, "jnt:file");
+            cssFolder = files.addNode(Constants.CSS_FOLDER, "jnt:folder");
         }
-        InputStream inputStream = null;
-        if (reset != null && !reset.isEmpty() && "true".equals(reset.get(0))) {
-            inputStream = module.getResource("less/" + Constants.VARIABLES_LESS).getInputStream();
-        } else if (variables != null && !variables.isEmpty()) {
-            inputStream = new ByteArrayInputStream(variables.get(0).getBytes("UTF-8"));
+        JCRNodeWrapper bootstrapCssNode;
+        if (cssFolder.hasNode(Constants.BOOTSTRAP_CSS)) {
+            bootstrapCssNode = cssFolder.getNode(Constants.BOOTSTRAP_CSS);
+        } else {
+            bootstrapCssNode = cssFolder.addNode(Constants.BOOTSTRAP_CSS, "jnt:file");
         }
-        if (inputStream != null) {
-            lessVariables.getFileContent().uploadFile(inputStream, "text/x-less");
-        }
-        session.save();
-        return ActionResult.OK;
+        bootstrapCssNode.getFileContent().uploadFile(new FileInputStream(bootstrapCss), "text/css");
+        lessVariables.getSession().save();
     }
 
     @Override
     public void setJahiaModule(JahiaTemplatesPackage module) {
         this.module = module;
+    }
+
+    public void setLessCompiler(LessCompiler lessCompiler) {
+        this.lessCompiler = lessCompiler;
     }
 }

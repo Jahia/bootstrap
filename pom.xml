@@ -39,7 +39,10 @@
     If you are unsure which license is appropriate for your use, 
     please contact the sales department at sales@jahia.com.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">  
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>jahia-modules</artifactId>
@@ -49,7 +52,7 @@
     <groupId>org.jahia.modules</groupId>
     <artifactId>bootstrap</artifactId>
     <name>Jahia Bootstrap</name>
-    <version>1.0-SNAPSHOT</version>    
+    <version>1.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <description>Integration of Twitter Bootstrap http://twitter.github.io/bootstrap/</description>
     <scm>
@@ -71,6 +74,13 @@
             </snapshots>
         </repository>
     </repositories>
+    <dependencies>
+        <dependency>
+            <groupId>org.lesscss</groupId>
+            <artifactId>lesscss</artifactId>
+            <version>1.3.3</version>
+        </dependency>
+    </dependencies>
     <build>
         <plugins>
             <plugin>
@@ -86,8 +96,9 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <mkdir dir="${basedir}/src/main/import/content/modules/bootstrap/files/variables.less" />
-                                <copy file="${basedir}/src/main/resources/less/variables.less" toDir="${basedir}/src/main/import/content/modules/bootstrap/files/variables.less" />
+                                <mkdir dir="${basedir}/src/main/import/content/modules/bootstrap/files"/>
+                                <copy file="${basedir}/src/main/resources/less/variables.less"
+                                      toDir="${basedir}/src/main/import/content/modules/bootstrap/files"/>
                             </tasks>
                         </configuration>
                     </execution>
@@ -99,7 +110,16 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Jahia-Depends>default,siteSettings</Jahia-Depends> 
+                        <Import-Package>
+                            com.ibm.uvm.tools;resolution:=optional,
+                            com.sun.jdmk.comm;resolution:=optional,
+                            javax.jmdns;resolution:=optional,
+                            org.apache.avalon.framework.logger;resolution:=optional,
+                            org.apache.log;resolution:=optional,
+                            sun.security.util;resolution:=optional,
+                            *,${jahia.plugin.projectPackageImport}
+                        </Import-Package>
+                        <Jahia-Depends>default,siteSettings</Jahia-Depends>
                     </instructions>
                 </configuration>
             </plugin>
