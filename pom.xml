@@ -80,6 +80,11 @@
             <artifactId>lesscss</artifactId>
             <version>1.3.3</version>
         </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>jsp-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -98,6 +103,7 @@
                             sun.security.util;resolution:=optional,
                             *,${jahia.plugin.projectPackageImport}
                         </Import-Package>
+                        <Export-Package>org.jahia.modules.bootstrap.tags</Export-Package>
                         <Jahia-Depends>default,siteSettings</Jahia-Depends>
                     </instructions>
                 </configuration>
