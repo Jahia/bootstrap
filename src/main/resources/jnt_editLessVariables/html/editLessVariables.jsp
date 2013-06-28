@@ -7,6 +7,18 @@
 <template:addResources type="javascript" resources="jquery.min.js,codemirror/lib/codemirror.js,codemirror/mode/less/less.js"/>
 <template:addResources type="css" resources="codemirror/codemirror.css"/>
 
+<script type="text/javascript">
+    function publishCSS(cssUrl) {
+        var data = {};
+        data["withSubTree"] = "true";
+        data["immediate"] = "true";
+        $.post(cssUrl + ".publish.do", data,
+                function (data, result) {
+                    window.location.reload();
+                });
+    }
+</script>
+
 <h2><fmt:message key="siteSettings.label.bootstrap" /></h2>
 
 <form action="<c:url value='${url.base}${renderContext.site.path}.updateVariables.do'/>" method="post">
@@ -16,8 +28,16 @@
     <input type="hidden" name="jcrRedirectTo" value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
     <input type="hidden" name="jcrNewNodeOutputFormat" value="<c:url value='${renderContext.mainResource.template}.html'/>">
     <div style="margin-top: 16px; text-align: center">
-        <button class="btn btn-primary" type="submit" name="save">
+        <button class="btn btn-primary" type="submit" name="save" onclick="workInProgress()">
             <i class="icon-ok icon-white"></i> <fmt:message key='label.save'/>
+        </button>
+        <jcr:node path="${renderContext.site.path}/files/css" var="cssNode"/>
+        <c:set var="cssNodeExists" value="${not empty cssNode}"/>
+        <c:if test="${cssNodeExists}">
+            <c:url value="${url.base}${cssNode.path}" var="cssUrl"/>
+        </c:if>
+        <button class="btn${cssNodeExists ? '' : ' disabled'}" type="button" name="reset"<c:if test="${cssNodeExists}"> onclick="workInProgress(); publishCSS('${cssUrl}')"</c:if>>
+            <i class="icon-globe icon-white"></i> <fmt:message key='label.publish'/>
         </button>
     </div>
 </form>
