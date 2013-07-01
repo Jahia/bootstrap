@@ -40,33 +40,37 @@
 
 package org.jahia.modules.bootstrap.actions;
 
+import org.jahia.api.Constants;
 import org.jahia.bin.Action;
 import org.jahia.bin.ActionResult;
 import org.jahia.services.content.JCRNodeWrapper;
+import org.jahia.services.content.JCRPublicationService;
 import org.jahia.services.content.JCRSessionWrapper;
+import org.jahia.services.content.PublicationInfo;
 import org.jahia.services.render.RenderContext;
 import org.jahia.services.render.Resource;
 import org.jahia.services.render.URLResolver;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class UpdateVariablesActions extends Action {
+public class PublishBootstrapAction extends Action {
+
+    private JCRPublicationService publicationService;
 
     @Override
-    public ActionResult doExecute(HttpServletRequest request, RenderContext renderContext, Resource resource,
-                                  JCRSessionWrapper session, Map<String, List<String>> parameters,
-                                  URLResolver urlResolver) throws Exception {
-        List<String> variables = parameters.get("variables");
-        if (variables == null || variables.isEmpty()) {
-            return ActionResult.BAD_REQUEST;
+    public ActionResult doExecute(HttpServletRequest req, RenderContext renderContext, Resource resource, JCRSessionWrapper session, Map<String, List<String>> parameters, URLResolver urlResolver) throws Exception {
+        Set<String> languages = null;
+        if (session.getLocale() != null) {
+            languages = Collections.singleton(session.getLocale().toString());
         }
-        JCRNodeWrapper lessVariables = renderContext.getSite().getNode("files/less/variables.less");
-        lessVariables.getFileContent().uploadFile(new ByteArrayInputStream(variables.get(0).getBytes("UTF-8")), "text/x-less");
-        session.save();
+        JCRNodeWrapper bootstrapFolder = renderContext.getSite().getNode("files/bootstrap");
+        List<PublicationInfo> tree = publicationService.getPublicationInfo(bootstrapFolder.getIdentifier(), languages, true, true, true, Constants.EDIT_WORKSPACE, Constants.LIVE_WORKSPACE);
+        publicationService.publishByInfoList(tree, Constants.EDIT_WORKSPACE, Constants.LIVE_WORKSPACE, false, new ArrayList<String>());
         return ActionResult.OK;
     }
 
+    public void setPublicationService(JCRPublicationService publicationService) {
+        this.publicationService = publicationService;
+    }
 }

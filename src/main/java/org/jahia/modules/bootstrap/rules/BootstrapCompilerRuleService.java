@@ -77,12 +77,12 @@ public class BootstrapCompilerRuleService {
         lessCompiler.compile(new File(tmpLessFolder, "bootstrap.less"), bootstrapCss);
         File responsiveCss = new File(tmpLessFolder, BOOTSTRAP_RESPONSIVE_CSS);
         lessCompiler.compile(new File(tmpLessFolder, "responsive.less"), responsiveCss);
-        JCRNodeWrapper files = lessFolder.getParent();
+        JCRNodeWrapper bootstrapFolder = lessFolder.getParent();
         JCRNodeWrapper cssFolder;
-        if (files.hasNode(CSS_FOLDER)) {
-            cssFolder = files.getNode(CSS_FOLDER);
+        if (bootstrapFolder.hasNode(CSS_FOLDER)) {
+            cssFolder = bootstrapFolder.getNode(CSS_FOLDER);
         } else {
-            cssFolder = files.addNode(CSS_FOLDER, "jnt:folder");
+            cssFolder = bootstrapFolder.addNode(CSS_FOLDER, "jnt:folder");
         }
         JCRNodeWrapper bootstrapCssNode;
         if (cssFolder.hasNode(BOOTSTRAP_CSS)) {

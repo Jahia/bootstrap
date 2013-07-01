@@ -38,31 +38,35 @@
  * please contact the sales department at sales@jahia.com.
  */
 
-package org.jahia.modules.bootstrap.tags;
+package org.jahia.modules.bootstrap.actions;
 
-import org.jahia.taglibs.AbstractJahiaTag;
+import org.jahia.bin.Action;
+import org.jahia.bin.ActionResult;
+import org.jahia.services.content.JCRNodeWrapper;
+import org.jahia.services.content.JCRSessionWrapper;
+import org.jahia.services.render.RenderContext;
+import org.jahia.services.render.Resource;
+import org.jahia.services.render.URLResolver;
 
-import javax.servlet.jsp.JspException;
+import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
+import java.util.List;
+import java.util.Map;
 
-public class AddBootstrapCSSTag extends AbstractJahiaTag {
-
-    private boolean responsive;
+public class CustomizeBootstrapAction extends Action {
 
     @Override
-    public int doEndTag() throws JspException {
-        try {
-            String resource = "bootstrap" + (responsive ? "-responsive" : "") + ".css";
-            String path = getRenderContext().getURLGenerator().getFiles() + getRenderContext().getSite().getPath() + "/files/bootstrap/css/" + resource;
-            String tag = String.format("<jahia:resource type=\"css\" path=\"%s\" insert=\"true\" resource=\"%s\" title=\"\" key=\"\" />\n",
-                    path, resource);
-            pageContext.getOut().print(tag);
-        } catch (Exception e) {
-            throw new JspException("Failed to write jahia:resource tag for bootstrap", e);
+    public ActionResult doExecute(HttpServletRequest request, RenderContext renderContext, Resource resource,
+                                  JCRSessionWrapper session, Map<String, List<String>> parameters,
+                                  URLResolver urlResolver) throws Exception {
+        List<String> variables = parameters.get("variables");
+        if (variables == null || variables.isEmpty()) {
+            return ActionResult.BAD_REQUEST;
         }
-        return super.doEndTag();
+        JCRNodeWrapper lessVariables = session.getNode(renderContext.getSite().getPath() + "/files/bootstrap/less/variables.less");
+        lessVariables.getFileContent().uploadFile(new ByteArrayInputStream(variables.get(0).getBytes("UTF-8")), "text/x-less");
+        session.save();
+        return ActionResult.OK;
     }
 
-    public void setResponsive(boolean responsive) {
-        this.responsive = responsive;
-    }
 }
