@@ -40,9 +40,12 @@
 
 package org.jahia.modules.bootstrap.tags;
 
+import org.jahia.data.templates.JahiaTemplatesPackage;
+import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.taglibs.AbstractJahiaTag;
 
 import javax.servlet.jsp.JspException;
+import java.util.List;
 
 public class AddBootstrapCSSTag extends AbstractJahiaTag {
 
@@ -51,8 +54,19 @@ public class AddBootstrapCSSTag extends AbstractJahiaTag {
     @Override
     public int doEndTag() throws JspException {
         try {
+            JCRSiteNode site = getRenderContext().getSite();
+            String basePath = site.getPath();
+            if (basePath.startsWith("/modules/")) {
+                List<JahiaTemplatesPackage> dependencies = site.getTemplatePackage().getDependencies();
+                for (JahiaTemplatesPackage dependency : dependencies) {
+                    if ("bootstrap".equals(dependency.getRootFolder())) {
+                        basePath = "/modules/" + dependency.getRootFolderWithVersion();
+                        break;
+                    }
+                }
+            }
             String resource = "bootstrap" + (responsive ? "-responsive" : "") + ".css";
-            String path = getRenderContext().getURLGenerator().getFiles() + getRenderContext().getSite().getPath() + "/files/bootstrap/css/" + resource;
+            String path = getRenderContext().getURLGenerator().getFiles() + basePath + "/files/bootstrap/css/" + resource;
             String tag = String.format("<jahia:resource type=\"css\" path=\"%s\" insert=\"true\" resource=\"%s\" title=\"\" key=\"\" />\n",
                     path, resource);
             pageContext.getOut().print(tag);
