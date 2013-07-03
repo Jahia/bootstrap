@@ -63,7 +63,16 @@ public class CustomizeBootstrapAction extends Action {
         if (variables == null || variables.isEmpty()) {
             return ActionResult.BAD_REQUEST;
         }
-        JCRNodeWrapper lessVariables = session.getNode(renderContext.getSite().getPath() + "/files/bootstrap/less/variables.less");
+        List<String> responsive = parameters.get("responsive");
+        boolean isBootstrapResponsive = responsive != null && !responsive.isEmpty();
+        JCRNodeWrapper site = resource.getNode();
+        if (!site.isNodeType("jmix:bootstrapSite")) {
+            site.addMixin("jmix:bootstrapSite");
+        }
+        if (!site.hasProperty("responsive") || site.getProperty("responsive").getBoolean() != isBootstrapResponsive) {
+            site.setProperty("responsive", isBootstrapResponsive);
+        }
+        JCRNodeWrapper lessVariables = session.getNode(renderContext.getSite().getPath() + "/files/less/variables.less");
         lessVariables.getFileContent().uploadFile(new ByteArrayInputStream(variables.get(0).getBytes("UTF-8")), "text/x-less");
         session.save();
         return ActionResult.OK;

@@ -15,11 +15,5 @@
         <name>addCSS</name>
         <tag-class>org.jahia.modules.bootstrap.tags.AddBootstrapCSSTag</tag-class>
         <body-content>JSP</body-content>
-        <attribute>
-            <description></description>
-            <name>responsive</name>
-            <required>false</required>
-            <rtexprvalue>true</rtexprvalue>
-        </attribute>
     </tag>
 </taglib>

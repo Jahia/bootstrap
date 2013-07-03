@@ -49,8 +49,6 @@ import java.util.List;
 
 public class AddBootstrapCSSTag extends AbstractJahiaTag {
 
-    private boolean responsive;
-
     @Override
     public int doEndTag() throws JspException {
         try {
@@ -65,7 +63,7 @@ public class AddBootstrapCSSTag extends AbstractJahiaTag {
                     }
                 }
             }
-            String resource = "bootstrap" + (responsive ? "-responsive" : "") + ".css";
+            String resource = "bootstrap.css";
             String path = getRenderContext().getURLGenerator().getFiles() + basePath + "/files/bootstrap/css/" + resource;
             String tag = String.format("<jahia:resource type=\"css\" path=\"%s\" insert=\"true\" resource=\"%s\" title=\"\" key=\"\" />\n",
                     path, resource);
@@ -74,9 +72,5 @@ public class AddBootstrapCSSTag extends AbstractJahiaTag {
             throw new JspException("Failed to write jahia:resource tag for bootstrap", e);
         }
         return super.doEndTag();
-    }
-
-    public void setResponsive(boolean responsive) {
-        this.responsive = responsive;
     }
 }

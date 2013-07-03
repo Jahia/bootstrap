@@ -2,3 +2,7 @@
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
 
 [jnt:editLessVariables] > jnt:content, jmix:studioOnly, jmix:siteComponent
+
+[jmix:bootstrapSite] mixin
+ extends = jnt:virtualsite
+ - responsive (boolean)

@@ -12,12 +12,15 @@
 <template:tokenizedForm>
     <form id="customizeBootstrap${renderContext.mainResource.node.identifier}"
           action="<c:url value='${url.base}${renderContext.site.path}.customizeBootstrap.do'/>" method="post">
-        <jcr:node path="${renderContext.site.path}/files/bootstrap/less/variables.less/jcr:content" var="lessVariables"/>
+        <jcr:node path="${renderContext.site.path}/files/less/variables.less/jcr:content" var="lessVariables"/>
         <jcr:nodeProperty node="${lessVariables}" name="jcr:data" var="data"/>
         <textarea id="variables" name="variables"><c:out value="${data.string}"/></textarea>
         <input type="hidden" name="jcrRedirectTo" value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
         <input type="hidden" name="jcrNewNodeOutputFormat" value="<c:url value='${renderContext.mainResource.template}.html'/>">
-        <div style="margin-top: 16px; text-align: center">
+        <div style="margin-top: 10px">
+            <label class="checkbox">
+                <input type="checkbox" name="responsive" value="true"${renderContext.site.properties.responsive.boolean ? ' checked="checked"' : ''} /><fmt:message key="jmix_bootstrapSite.responsive" />
+            </label>
             <button class="btn btn-primary" type="submit" name="save" onclick="workInProgress()">
                 <i class="icon-ok icon-white"></i> <fmt:message key='label.save'/>
             </button>
@@ -41,7 +44,7 @@
     var myCodeMirror = CodeMirror.fromTextArea(document.getElementById("variables"), {mode:"less", lineNumbers:true, matchBrackets:true});
 
     function setCodeMirrorSize() {
-        myCodeMirror.setSize("100%", $(window).height() - 150);
+        myCodeMirror.setSize("100%", $(window).height() - 170);
     }
     setCodeMirrorSize();
     $(window).resize(setCodeMirrorSize);
