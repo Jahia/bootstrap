@@ -7,7 +7,7 @@
 <template:addResources type="javascript" resources="jquery.min.js,codemirror/lib/codemirror.js,codemirror/mode/less/less.js"/>
 <template:addResources type="css" resources="codemirror/codemirror.css"/>
 
-<h2><fmt:message key="siteSettings.label.bootstrap"/></h2>
+<h2 id="header${renderContext.mainResource.node.identifier}"><fmt:message key="siteSettings.label.bootstrap"/></h2>
 
 <template:tokenizedForm>
     <form id="customizeBootstrap${renderContext.mainResource.node.identifier}"
@@ -17,7 +17,7 @@
         <textarea id="variables" name="variables"><c:out value="${data.string}"/></textarea>
         <input type="hidden" name="jcrRedirectTo" value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
         <input type="hidden" name="jcrNewNodeOutputFormat" value="<c:url value='${renderContext.mainResource.template}.html'/>">
-        <div style="margin-top: 10px">
+        <div id="footer${renderContext.mainResource.node.identifier}" style="margin-top: 10px">
             <label class="checkbox">
                 <input type="checkbox" name="responsive" value="true"${renderContext.site.properties.responsive.boolean ? ' checked="checked"' : ''} /><fmt:message key="jmix_bootstrapSite.responsive" />
             </label>
@@ -44,7 +44,10 @@
     var myCodeMirror = CodeMirror.fromTextArea(document.getElementById("variables"), {mode:"less", lineNumbers:true, matchBrackets:true});
 
     function setCodeMirrorSize() {
-        myCodeMirror.setSize("100%", $(window).height() - 170);
+        myCodeMirror.setSize("100%", $(document).height() - $(".page-header").outerHeight(true)
+                - $("#header${renderContext.mainResource.node.identifier}").outerHeight(true)
+                - $("#footer${renderContext.mainResource.node.identifier}").outerHeight(true)
+                - $("#publishBootstrap${renderContext.mainResource.node.identifier}").outerHeight(true));
     }
     setCodeMirrorSize();
     $(window).resize(setCodeMirrorSize);
