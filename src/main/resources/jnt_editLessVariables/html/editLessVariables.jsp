@@ -44,7 +44,7 @@
     var myCodeMirror = CodeMirror.fromTextArea(document.getElementById("variables"), {mode:"less", lineNumbers:true, matchBrackets:true});
 
     function setCodeMirrorSize() {
-        myCodeMirror.setSize("100%", $(document).height() - $(".page-header").outerHeight(true)
+        myCodeMirror.setSize("100%", $(window).height() - $(".page-header").outerHeight(true)
                 - $("#header${renderContext.mainResource.node.identifier}").outerHeight(true)
                 - $("#footer${renderContext.mainResource.node.identifier}").outerHeight(true)
                 - $("#publishBootstrap${renderContext.mainResource.node.identifier}").outerHeight(true));
