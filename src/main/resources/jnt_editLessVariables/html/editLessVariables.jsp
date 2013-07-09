@@ -28,7 +28,7 @@
             <c:set var="needPublication" value="${jcr:needPublication(bootstrapFolder, null, false, true, true)}"/>
             <button class="btn${needPublication ? '' : ' disabled'}" type="button" name="publish"
                     <c:if test="${needPublication}">onclick="workInProgress(); $('#publishBootstrap${renderContext.mainResource.node.identifier}').submit()"</c:if>>
-                <i class="icon-globe icon-white"></i> <fmt:message key='label.publish'/>
+                <i class="icon-globe"></i> <fmt:message key='label.publish'/>
             </button>
         </div>
     </form>
