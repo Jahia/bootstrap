@@ -4,22 +4,54 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="jcr" uri="http://www.jahia.org/tags/jcr" %>
 <%@ taglib prefix="functions" uri="http://www.jahia.org/tags/functions" %>
-<template:addResources type="javascript" resources="jquery.min.js,codemirror/lib/codemirror.js,codemirror/mode/less/less.js"/>
+<%--@elvariable id="currentNode" type="org.jahia.services.content.JCRNodeWrapper"--%>
+<%--@elvariable id="propertyDefinition" type="org.jahia.services.content.nodetypes.ExtendedPropertyDefinition"--%>
+<%--@elvariable id="type" type="org.jahia.services.content.nodetypes.ExtendedNodeType"--%>
+<%--@elvariable id="out" type="java.io.PrintWriter"--%>
+<%--@elvariable id="script" type="org.jahia.services.render.scripting.Script"--%>
+<%--@elvariable id="scriptInfo" type="java.lang.String"--%>
+<%--@elvariable id="workspace" type="java.lang.String"--%>
+<%--@elvariable id="renderContext" type="org.jahia.services.render.RenderContext"--%>
+<%--@elvariable id="currentResource" type="org.jahia.services.render.Resource"--%>
+<%--@elvariable id="url" type="org.jahia.services.render.URLGenerator"--%>
+<template:addResources type="javascript"
+                       resources="jquery.min.js,codemirror/lib/codemirror.js,codemirror/mode/less/less.js"/>
 <template:addResources type="css" resources="codemirror/codemirror.css"/>
 
 <h2 id="header${renderContext.mainResource.node.identifier}"><fmt:message key="siteSettings.label.bootstrap"/></h2>
 
+<c:set var="selectedFile" value="variables.less"/>
+<c:if test="${not empty param.fileNameSelector}">
+    <c:set var="selectedFile" value="${param.fileNameSelector}"/>
+</c:if>
+<template:tokenizedForm>
+    <form id="fileSelector" method="get" action="<c:url value='${url.base}${renderContext.site.path}.bootstrapCustomization.html'/>">
+        <select name="fileNameSelector">
+            <jcr:node path="${renderContext.site.path}/files/less/" var="lessFiles"/>
+            <c:forEach items="${jcr:getChildrenOfType(lessFiles, 'jnt:file')}" var="fileNodes">
+                <option value="${fileNodes.name}" <c:if test="${selectedFile eq fileNodes.name}">selected="selected" </c:if>>${fileNodes.displayableName}</option>
+            </c:forEach>
+        </select>
+        <button class="btn btn-primary" type="submit"><fmt:message key='label.select.file'/></button>
+    </form>
+</template:tokenizedForm>
+
 <template:tokenizedForm>
     <form id="customizeBootstrap${renderContext.mainResource.node.identifier}"
           action="<c:url value='${url.base}${renderContext.site.path}.customizeBootstrap.do'/>" method="post">
-        <jcr:node path="${renderContext.site.path}/files/less/variables.less/jcr:content" var="lessVariables"/>
+        <jcr:node path="${renderContext.site.path}/files/less/${selectedFile}/jcr:content" var="lessVariables"/>
         <jcr:nodeProperty node="${lessVariables}" name="jcr:data" var="data"/>
         <textarea id="variables" name="variables"><c:out value="${data.string}"/></textarea>
-        <input type="hidden" name="jcrRedirectTo" value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
-        <input type="hidden" name="jcrNewNodeOutputFormat" value="<c:url value='${renderContext.mainResource.template}.html'/>">
+        <input type="hidden" name="jcrRedirectTo"
+               value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
+        <input type="hidden" name="jcrNewNodeOutputFormat"
+               value="<c:url value='${renderContext.mainResource.template}.html'/>">
+        <input type="hidden" value="${selectedFile}" name="selectedFile"/>
         <div id="footer${renderContext.mainResource.node.identifier}" style="margin-top: 10px">
             <label class="checkbox">
-                <input type="checkbox" name="responsive" value="true"${renderContext.site.properties.responsive.boolean ? ' checked="checked"' : ''} /><fmt:message key="jmix_bootstrapSite.responsive" />
+                <input type="checkbox" name="responsive"
+                       value="true"${renderContext.site.properties.responsive.boolean ? ' checked="checked"' : ''} /><fmt:message
+                    key="jmix_bootstrapSite.responsive"/>
             </label>
             <button class="btn btn-primary" type="submit" name="save" onclick="workInProgress()">
                 <i class="icon-ok icon-white"></i> <fmt:message key='label.save'/>
@@ -36,18 +68,22 @@
 <template:tokenizedForm>
     <form id="publishBootstrap${renderContext.mainResource.node.identifier}"
           action="<c:url value='${url.base}${renderContext.site.path}.publishBootstrap.do'/>" method="post">
-        <input type="hidden" name="jcrRedirectTo" value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
-        <input type="hidden" name="jcrNewNodeOutputFormat" value="<c:url value='${renderContext.mainResource.template}.html'/>">
+        <input type="hidden" name="jcrRedirectTo"
+               value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
+        <input type="hidden" name="jcrNewNodeOutputFormat"
+               value="<c:url value='${renderContext.mainResource.template}.html'/>">
     </form>
 </template:tokenizedForm>
 <script type="text/javascript">
-    var myCodeMirror = CodeMirror.fromTextArea(document.getElementById("variables"), {mode:"less", lineNumbers:true, matchBrackets:true});
+    var myCodeMirror = CodeMirror.fromTextArea(document.getElementById("variables"),
+            {mode: "less", lineNumbers: true, matchBrackets: true});
 
     function setCodeMirrorSize() {
-        myCodeMirror.setSize("100%", $(window).height() - $(".page-header").outerHeight(true)
-                - $("#header${renderContext.mainResource.node.identifier}").outerHeight(true)
-                - $("#footer${renderContext.mainResource.node.identifier}").outerHeight(true)
-                - $("#publishBootstrap${renderContext.mainResource.node.identifier}").outerHeight(true));
+        myCodeMirror.setSize("100%", $(window).height() - $(".page-header").outerHeight(true) -
+                                     $("#header${renderContext.mainResource.node.identifier}").outerHeight(true) -
+                                     $("#footer${renderContext.mainResource.node.identifier}").outerHeight(true) -
+                                     $("#publishBootstrap${renderContext.mainResource.node.identifier}").outerHeight(true) -
+                                     $("#fileSelector").outerHeight(true));
     }
     setCodeMirrorSize();
     $(window).resize(setCodeMirrorSize);

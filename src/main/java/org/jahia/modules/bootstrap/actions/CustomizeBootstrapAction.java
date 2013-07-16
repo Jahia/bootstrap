@@ -72,7 +72,7 @@ public class CustomizeBootstrapAction extends Action {
         if (!site.hasProperty("responsive") || site.getProperty("responsive").getBoolean() != isBootstrapResponsive) {
             site.setProperty("responsive", isBootstrapResponsive);
         }
-        JCRNodeWrapper lessVariables = session.getNode(renderContext.getSite().getPath() + "/files/less/variables.less");
+        JCRNodeWrapper lessVariables = session.getNode(renderContext.getSite().getPath() + "/files/less/"+parameters.get("selectedFile").get(0));
         lessVariables.getFileContent().uploadFile(new ByteArrayInputStream(variables.get(0).getBytes("UTF-8")), "text/x-less");
         session.save();
         return ActionResult.OK;
