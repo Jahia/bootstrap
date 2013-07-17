@@ -24,6 +24,8 @@
 <c:if test="${not empty param.fileNameSelector}">
     <c:set var="selectedFile" value="${param.fileNameSelector}"/>
 </c:if>
+<jsp:useBean id="now" class="java.util.Date"/>
+<fmt:formatDate value="${now}" type="both" dateStyle="full" timeStyle="full" var="currentDate"/>
 <template:tokenizedForm>
     <form id="fileSelector" method="get" action="<c:url value='${url.base}${renderContext.site.path}.bootstrapCustomization.html'/>">
         <select name="fileNameSelector">
@@ -32,10 +34,13 @@
                 <option value="${fileNodes.name}" <c:if test="${selectedFile eq fileNodes.name}">selected="selected" </c:if>>${fileNodes.displayableName}</option>
             </c:forEach>
         </select>
-        <button class="btn btn-primary" type="submit"><fmt:message key='label.select.file'/></button>
+        <button class="btn btn-primary" type="submit"><fmt:message key='siteSettings.bootstrap.select.file'/></button>
     </form>
 </template:tokenizedForm>
-
+<fmt:message key="siteSettings.bootstrap.editing.file">
+    <fmt:param value="${selectedFile}"/>
+    <fmt:param value="${currentDate}"/>
+</fmt:message>
 <template:tokenizedForm>
     <form id="customizeBootstrap${renderContext.mainResource.node.identifier}"
           action="<c:url value='${url.base}${renderContext.site.path}.customizeBootstrap.do'/>" method="post">
