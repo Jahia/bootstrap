@@ -17,7 +17,7 @@ global BootstrapCompilerRuleService bootstrapCompiler
 rule "Compile Bootstrap"
   when
     A file content has been modified
-      - its path matches /sites/[\\p{Alnum}\\-_]+/files/less/variables.less
+      - its path matches /sites/[\\p{Alnum}\\-_]+/files/less/[\\p{Alnum}\\-_]+.less
     The node has a parent
   then
     Compile the parent to css
