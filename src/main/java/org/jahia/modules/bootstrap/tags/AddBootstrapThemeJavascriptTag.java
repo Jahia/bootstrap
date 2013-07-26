@@ -53,8 +53,8 @@ import javax.jcr.PathNotFoundException;
 import javax.servlet.jsp.JspException;
 import java.util.List;
 
-public class AddBootstrapCSSTag extends AbstractJahiaTag {
-    private static final transient Logger logger = org.slf4j.LoggerFactory.getLogger(AddBootstrapCSSTag.class);
+public class AddBootstrapThemeJavascriptTag extends AbstractJahiaTag {
+    private static final transient Logger logger = org.slf4j.LoggerFactory.getLogger(AddBootstrapThemeJavascriptTag.class);
     @Override
     public int doEndTag() throws JspException {
         try {
@@ -70,11 +70,6 @@ public class AddBootstrapCSSTag extends AbstractJahiaTag {
                     }
                 }
             }
-            String resource = "bootstrap.css";
-            String path = renderContext.getURLGenerator().getFiles() + basePath + "/files/bootstrap/css/" + resource;
-            String tag = String.format("<jahia:resource type=\"css\" path=\"%s\" insert=\"true\" resource=\"%s\" title=\"\" key=\"\" />\n",
-                    path, resource);
-            pageContext.getOut().print(tag);
             try {
                 JCRSessionWrapper session = renderContext.getMainResource().getNode().getSession();
                 JCRNodeWrapper node = session.getNode(basePath + "/files/bootstrap/javascript");
@@ -83,9 +78,9 @@ public class AddBootstrapCSSTag extends AbstractJahiaTag {
                     while (nodes.hasNext()) {
                         JCRNodeWrapper next = (JCRNodeWrapper) nodes.next();
                         if(next.isNodeType("nt:file")) {
-                            path = renderContext.getURLGenerator().getFiles() + basePath + "/files/bootstrap/javascript/" +
+                            String path = renderContext.getURLGenerator().getFiles() + basePath + "/files/bootstrap/javascript/" +
                                    next.getName();
-                            tag = String.format("<jahia:resource type=\"javascript\" path=\"%s\" resource=\"%s\" title=\"\" key=\"\" />\n",
+                            String tag = String.format("<jahia:resource type=\"javascript\" path=\"%s\" resource=\"%s\" title=\"\" key=\"\" />\n",
                                     path, next.getName());
                             pageContext.getOut().print(tag);
                         }

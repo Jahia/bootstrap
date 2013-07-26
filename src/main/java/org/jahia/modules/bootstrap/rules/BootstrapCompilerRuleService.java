@@ -62,53 +62,72 @@ public class BootstrapCompilerRuleService {
 
     private LessCompiler lessCompiler;
 
-    public void compile(AddedNodeFact nodeFact, KnowledgeHelper drools) throws RepositoryException, IOException, LessException {
+    public void compile(AddedNodeFact nodeFact, KnowledgeHelper drools)
+            throws RepositoryException, IOException, LessException {
         JCRNodeWrapper node = nodeFact.getNode();
         File tmpLessFolder = new File(FileUtils.getTempDirectory(), "less-" + System.currentTimeMillis());
         tmpLessFolder.mkdir();
-        JCRNodeWrapper lessFolder = node.getParent();
-        NodeIterator nodes = lessFolder.getNodes();
-        while (nodes.hasNext()) {
-            JCRNodeWrapper n = (JCRNodeWrapper) nodes.nextNode();
-            IOUtils.copy(n.getFileContent().downloadFile(), new FileOutputStream(new File(tmpLessFolder, n.getName())));
-        }
-        JCRSiteNode site = node.getResolveSite();
-        boolean isResponsive = site.hasProperty("responsive") && site.getProperty("responsive").getBoolean();
-        File bootstrapCss = new File(tmpLessFolder, BOOTSTRAP_CSS);
-        lessCompiler.compile(new File(tmpLessFolder, "bootstrap.less"), bootstrapCss);
-        File responsiveCss = null;
-        if (isResponsive) {
-            responsiveCss = new File(tmpLessFolder, RESPONSIVE_CSS);
-            lessCompiler.compile(new File(tmpLessFolder, "responsive.less"), responsiveCss);
-        }
-        JCRNodeWrapper files = lessFolder.getParent();
-        JCRNodeWrapper bootstrapFolder;
-        if (files.hasNode(BOOTSTRAP_FOLDER)) {
-            bootstrapFolder = files.getNode(BOOTSTRAP_FOLDER);
-        } else {
-            bootstrapFolder = files.addNode(BOOTSTRAP_FOLDER, "jnt:folder");
-        }
-        JCRNodeWrapper cssFolder;
-        if (bootstrapFolder.hasNode(CSS_FOLDER)) {
-            cssFolder = bootstrapFolder.getNode(CSS_FOLDER);
-        } else {
-            cssFolder = bootstrapFolder.addNode(CSS_FOLDER, "jnt:folder");
-        }
-        boolean uploadCss = true;
-        JCRNodeWrapper bootstrapCssNode;
-        if (cssFolder.hasNode(BOOTSTRAP_CSS)) {
-            bootstrapCssNode = cssFolder.getNode(BOOTSTRAP_CSS);
-            uploadCss = !IOUtils.contentEquals(bootstrapCssNode.getFileContent().downloadFile(), getCSSInputStream(isResponsive, bootstrapCss, responsiveCss));
-        } else {
-            bootstrapCssNode = cssFolder.addNode(BOOTSTRAP_CSS, "jnt:file");
-        }
-        if (uploadCss) {
-            bootstrapCssNode.getFileContent().uploadFile(getCSSInputStream(isResponsive, bootstrapCss, responsiveCss), "text/css");
-            node.getSession().save();
+        try {
+            JCRNodeWrapper lessFolder = node.getParent();
+            NodeIterator nodes = lessFolder.getNodes();
+            copyDirectory(tmpLessFolder, nodes);
+            JCRSiteNode site = node.getResolveSite();
+            boolean isResponsive = site.hasProperty("responsive") && site.getProperty("responsive").getBoolean();
+            File bootstrapCss = new File(tmpLessFolder, BOOTSTRAP_CSS);
+            lessCompiler.compile(new File(tmpLessFolder, "bootstrap.less"), bootstrapCss);
+            File responsiveCss = null;
+            if (isResponsive) {
+                responsiveCss = new File(tmpLessFolder, RESPONSIVE_CSS);
+                lessCompiler.compile(new File(tmpLessFolder, "responsive.less"), responsiveCss);
+            }
+            JCRNodeWrapper files = lessFolder.getParent();
+            JCRNodeWrapper bootstrapFolder;
+            if (files.hasNode(BOOTSTRAP_FOLDER)) {
+                bootstrapFolder = files.getNode(BOOTSTRAP_FOLDER);
+            } else {
+                bootstrapFolder = files.addNode(BOOTSTRAP_FOLDER, "jnt:folder");
+            }
+            JCRNodeWrapper cssFolder;
+            if (bootstrapFolder.hasNode(CSS_FOLDER)) {
+                cssFolder = bootstrapFolder.getNode(CSS_FOLDER);
+            } else {
+                cssFolder = bootstrapFolder.addNode(CSS_FOLDER, "jnt:folder");
+            }
+            boolean uploadCss = true;
+            JCRNodeWrapper bootstrapCssNode;
+            if (cssFolder.hasNode(BOOTSTRAP_CSS)) {
+                bootstrapCssNode = cssFolder.getNode(BOOTSTRAP_CSS);
+                uploadCss = !IOUtils.contentEquals(bootstrapCssNode.getFileContent().downloadFile(), getCSSInputStream(
+                        isResponsive, bootstrapCss, responsiveCss));
+            } else {
+                bootstrapCssNode = cssFolder.addNode(BOOTSTRAP_CSS, "jnt:file");
+            }
+            if (uploadCss) {
+                bootstrapCssNode.getFileContent().uploadFile(getCSSInputStream(isResponsive, bootstrapCss, responsiveCss),
+                        "text/css");
+                node.getSession().save();
+            }
+        } finally {
+            FileUtils.deleteQuietly(tmpLessFolder);
         }
     }
 
-    private InputStream getCSSInputStream(boolean isResponsive, File bootstrapCss, File responsiveCss) throws FileNotFoundException {
+    private void copyDirectory(File tmpLessFolder, NodeIterator nodes) throws RepositoryException, IOException {
+        while (nodes.hasNext()) {
+            JCRNodeWrapper n = (JCRNodeWrapper) nodes.nextNode();
+            if (n.isNodeType("nt:folder")) {
+                File directory = new File(tmpLessFolder, n.getName());
+                FileUtils.forceMkdir(directory);
+                copyDirectory(directory, n.getNodes());
+            } else if (n.isNodeType("nt:file")) {
+                IOUtils.copy(n.getFileContent().downloadFile(), new FileOutputStream(new File(tmpLessFolder,
+                        n.getName())));
+            }
+        }
+    }
+
+    private InputStream getCSSInputStream(boolean isResponsive, File bootstrapCss, File responsiveCss)
+            throws FileNotFoundException {
         if (isResponsive) {
             return new SequenceInputStream(new FileInputStream(bootstrapCss), new FileInputStream(responsiveCss));
         } else {
