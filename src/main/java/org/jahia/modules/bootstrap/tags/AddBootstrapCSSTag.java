@@ -45,6 +45,7 @@ import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.JCRSessionWrapper;
 import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.render.RenderContext;
+import org.jahia.services.render.URLGenerator;
 import org.jahia.taglibs.AbstractJahiaTag;
 import org.slf4j.Logger;
 
@@ -71,7 +72,8 @@ public class AddBootstrapCSSTag extends AbstractJahiaTag {
                 }
             }
             String resource = "bootstrap.css";
-            String path = renderContext.getURLGenerator().getFiles() + basePath + "/files/bootstrap/css/" + resource;
+            URLGenerator urlGenerator = renderContext.getURLGenerator();
+            String path = urlGenerator.getContext() + urlGenerator.getFiles() + basePath + "/files/bootstrap/css/" + resource;
             String tag = String.format("<jahia:resource type=\"css\" path=\"%s\" insert=\"true\" resource=\"%s\" title=\"\" key=\"\" />\n",
                     path, resource);
             pageContext.getOut().print(tag);
