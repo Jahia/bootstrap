@@ -4,7 +4,7 @@
          xmlns:jmix="http://www.jahia.org/jahia/mix/1.0"
          xmlns:jnt="http://www.jahia.org/jahia/nt/1.0">
     <modules jcr:primaryType="jnt:modules">
-        <bootstrap j:dependencies="default siteSettings"
+        <bootstrap j:dependencies="default siteSettings skins"
                  j:moduleType="module"
                  j:title="bootstrap"
                  jcr:primaryType="jnt:module">
