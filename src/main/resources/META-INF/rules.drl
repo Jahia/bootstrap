@@ -18,6 +18,7 @@ rule "Compile Bootstrap"
   when
     A file content has been modified
       - its path matches /sites/[\\p{Alnum}\\-_]+/files/less/[\\p{Alnum}\\-_]+.less
+    The node has not been copied
     The node has a parent
   then
     Compile the parent to css
