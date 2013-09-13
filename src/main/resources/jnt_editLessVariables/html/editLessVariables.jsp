@@ -15,8 +15,9 @@
 <%--@elvariable id="currentResource" type="org.jahia.services.render.Resource"--%>
 <%--@elvariable id="url" type="org.jahia.services.render.URLGenerator"--%>
 <template:addResources type="javascript"
-                       resources="jquery.min.js,codemirror/lib/codemirror.js,codemirror/mode/less/less.js"/>
+                       resources="jquery.min.js,jquery.blockUI.js,workInProgress.js,codemirror/lib/codemirror.js,codemirror/mode/less/less.js"/>
 <template:addResources type="css" resources="codemirror/codemirror.css"/>
+<fmt:message key="label.workInProgressTitle" var="i18nWaiting"/><c:set var="i18nWaiting" value="${functions:escapeJavaScript(i18nWaiting)}"/>
 
 <h2 id="header${renderContext.mainResource.node.identifier}"><fmt:message key="siteSettings.label.bootstrap"/></h2>
 
@@ -58,13 +59,13 @@
                        value="true"${renderContext.site.properties.responsive.boolean ? ' checked="checked"' : ''} /><fmt:message
                     key="jmix_bootstrapSite.responsive"/>
             </label>
-            <button class="btn btn-primary" type="submit" name="save" onclick="workInProgress()">
+            <button class="btn btn-primary" type="submit" name="save" onclick="workInProgress('${i18nWaiting}')">
                 <i class="icon-ok icon-white"></i> <fmt:message key='label.save'/>
             </button>
             <jcr:node path="${renderContext.site.path}/files/bootstrap" var="bootstrapFolder"/>
             <c:set var="needPublication" value="${jcr:needPublication(bootstrapFolder, null, false, true, true)}"/>
             <button class="btn${needPublication ? '' : ' disabled'}" type="button" name="publish"
-                    <c:if test="${needPublication}">onclick="workInProgress(); $('#publishBootstrap${renderContext.mainResource.node.identifier}').submit()"</c:if>>
+                    <c:if test="${needPublication}">onclick="workInProgress('${i18nWaiting}'); $('#publishBootstrap${renderContext.mainResource.node.identifier}').submit()"</c:if>>
                 <i class="icon-globe"></i> <fmt:message key='label.publish'/>
             </button>
         </div>
