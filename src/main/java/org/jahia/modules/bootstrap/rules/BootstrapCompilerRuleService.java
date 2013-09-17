@@ -42,7 +42,7 @@ package org.jahia.modules.bootstrap.rules;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.drools.spi.KnowledgeHelper;
+import org.drools.core.spi.KnowledgeHelper;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.content.rules.AddedNodeFact;
