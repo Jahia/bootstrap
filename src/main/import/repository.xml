@@ -163,7 +163,7 @@
                 <templates j:rootTemplatePath="/base" jcr:primaryType="jnt:templatesFolder">
                     <files jcr:primaryType="jnt:folder"/>
                     <contents jcr:primaryType="jnt:contentFolder"/>
-                    <siteSettingsBase j:view="siteSettings"
+                    <site-settings-base j:view="siteSettings"
                               jcr:mixinTypes="jmix:useUILocale"
                               jcr:primaryType="jnt:template">
                         <bootstrapCustomization j:applyOn="jnt:virtualsite"
@@ -178,7 +178,7 @@
                                 <editLessVariables jcr:primaryType="jnt:editLessVariables"/>
                             </pagecontent>
                         </bootstrapCustomization>
-                    </siteSettingsBase>
+                    </site-settings-base>
                 </templates>
                 
                 
