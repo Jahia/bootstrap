@@ -64,8 +64,8 @@ public class AddBootstrapThemeJavascriptTag extends AbstractJahiaTag {
             if (basePath.startsWith("/modules/")) {
                 List<JahiaTemplatesPackage> dependencies = site.getTemplatePackage().getDependencies();
                 for (JahiaTemplatesPackage dependency : dependencies) {
-                    if ("bootstrap".equals(dependency.getRootFolder())) {
-                        basePath = "/modules/" + dependency.getRootFolderWithVersion();
+                    if ("bootstrap".equals(dependency.getId())) {
+                        basePath = "/modules/" + dependency.getIdWithVersion();
                         break;
                     }
                 }
