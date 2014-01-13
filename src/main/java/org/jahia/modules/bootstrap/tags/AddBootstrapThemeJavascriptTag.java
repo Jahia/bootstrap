@@ -55,34 +55,40 @@ import java.util.List;
 
 public class AddBootstrapThemeJavascriptTag extends AbstractJahiaTag {
     private static final transient Logger logger = org.slf4j.LoggerFactory.getLogger(AddBootstrapThemeJavascriptTag.class);
+    public static final String BOOTSTRAP_THEME_JAVASCRIPT_PATH = "/files/bootstrap/javascript";
+
     @Override
     public int doEndTag() throws JspException {
         try {
             RenderContext renderContext = getRenderContext();
             JCRSiteNode site = renderContext.getSite();
+            JCRSessionWrapper session = site.getSession();
             String basePath = site.getPath();
             if (basePath.startsWith("/modules/")) {
-                List<JahiaTemplatesPackage> dependencies = site.getTemplatePackage().getDependencies();
-                for (JahiaTemplatesPackage dependency : dependencies) {
-                    if ("bootstrap".equals(dependency.getId())) {
-                        basePath = "/modules/" + dependency.getIdWithVersion();
-                        break;
+                basePath = "/modules/" + site.getTemplatePackage().getIdWithVersion();
+                if (!session.nodeExists(basePath + BOOTSTRAP_THEME_JAVASCRIPT_PATH)) {
+                    List<JahiaTemplatesPackage> dependencies = site.getTemplatePackage().getDependencies();
+                    for (JahiaTemplatesPackage dependency : dependencies) {
+                        if ("bootstrap".equals(dependency.getId())) {
+                            basePath = "/modules/" + dependency.getIdWithVersion();
+                            break;
+                        }
                     }
                 }
             }
             try {
-                JCRSessionWrapper session = renderContext.getMainResource().getNode().getSession();
-                JCRNodeWrapper node = session.getNode(basePath + "/files/bootstrap/javascript");
-                if(node.hasNodes()) {
-                    NodeIterator nodes = node.getNodes();
-                    while (nodes.hasNext()) {
-                        JCRNodeWrapper next = (JCRNodeWrapper) nodes.next();
-                        if(next.isNodeType("nt:file")) {
-                            String path = renderContext.getURLGenerator().getFiles() + basePath + "/files/bootstrap/javascript/" +
-                                   next.getName();
-                            String tag = String.format("<jahia:resource type=\"javascript\" path=\"%s\" resource=\"%s\" title=\"\" key=\"\" />\n",
-                                    path, next.getName());
-                            pageContext.getOut().print(tag);
+                if (session.nodeExists(basePath + BOOTSTRAP_THEME_JAVASCRIPT_PATH)) {
+                    JCRNodeWrapper node = session.getNode(basePath + BOOTSTRAP_THEME_JAVASCRIPT_PATH);
+                    if(node.hasNodes()) {
+                        NodeIterator nodes = node.getNodes();
+                        while (nodes.hasNext()) {
+                            JCRNodeWrapper next = (JCRNodeWrapper) nodes.next();
+                            if(next.isNodeType("nt:file")) {
+                                String path = renderContext.getURLGenerator().getFiles() + next.getPath();
+                                String tag = String.format("<jahia:resource type=\"javascript\" path=\"%s\" resource=\"%s\" title=\"\" key=\"\" />\n",
+                                        path, next.getName());
+                                pageContext.getOut().print(tag);
+                            }
                         }
                     }
                 }
