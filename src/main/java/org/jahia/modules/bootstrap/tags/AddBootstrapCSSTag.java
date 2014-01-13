@@ -56,6 +56,9 @@ import java.util.List;
 
 public class AddBootstrapCSSTag extends AbstractJahiaTag {
     private static final transient Logger logger = org.slf4j.LoggerFactory.getLogger(AddBootstrapCSSTag.class);
+    public static final String CSS_NAME = "bootstrap.css";
+    public static final String CSS_PATH = "/files/bootstrap/css/" + CSS_NAME;
+
     @Override
     public int doEndTag() throws JspException {
         try {
@@ -63,39 +66,22 @@ public class AddBootstrapCSSTag extends AbstractJahiaTag {
             JCRSiteNode site = renderContext.getSite();
             String basePath = site.getPath();
             if (basePath.startsWith("/modules/")) {
-                List<JahiaTemplatesPackage> dependencies = site.getTemplatePackage().getDependencies();
-                for (JahiaTemplatesPackage dependency : dependencies) {
-                    if ("bootstrap".equals(dependency.getId())) {
-                        basePath = "/modules/" + dependency.getIdWithVersion();
-                        break;
-                    }
-                }
-            }
-            String resource = "bootstrap.css";
-            URLGenerator urlGenerator = renderContext.getURLGenerator();
-            String path = urlGenerator.getContext() + urlGenerator.getFiles() + basePath + "/files/bootstrap/css/" + resource;
-            String tag = String.format("<jahia:resource type=\"css\" path=\"%s\" insert=\"true\" resource=\"%s\" title=\"\" key=\"\" />\n",
-                    path, resource);
-            pageContext.getOut().print(tag);
-            try {
-                JCRSessionWrapper session = renderContext.getMainResource().getNode().getSession();
-                JCRNodeWrapper node = session.getNode(basePath + "/files/bootstrap/javascript");
-                if(node.hasNodes()) {
-                    NodeIterator nodes = node.getNodes();
-                    while (nodes.hasNext()) {
-                        JCRNodeWrapper next = (JCRNodeWrapper) nodes.next();
-                        if(next.isNodeType("nt:file")) {
-                            path = renderContext.getURLGenerator().getFiles() + basePath + "/files/bootstrap/javascript/" +
-                                   next.getName();
-                            tag = String.format("<jahia:resource type=\"javascript\" path=\"%s\" resource=\"%s\" title=\"\" key=\"\" />\n",
-                                    path, next.getName());
-                            pageContext.getOut().print(tag);
+                basePath = "/modules/" + site.getTemplatePackage().getIdWithVersion();
+                if (!site.getSession().nodeExists(basePath + CSS_PATH)) {
+                    List<JahiaTemplatesPackage> dependencies = site.getTemplatePackage().getDependencies();
+                    for (JahiaTemplatesPackage dependency : dependencies) {
+                        if ("bootstrap".equals(dependency.getId())) {
+                            basePath = "/modules/" + dependency.getIdWithVersion();
+                            break;
                         }
                     }
                 }
-            } catch (PathNotFoundException e) {
-                logger.debug(e.getMessage(), e);
             }
+            URLGenerator urlGenerator = renderContext.getURLGenerator();
+            String path = urlGenerator.getContext() + urlGenerator.getFiles() + basePath + CSS_PATH;
+            String tag = String.format("<jahia:resource type=\"css\" path=\"%s\" insert=\"true\" resource=\"%s\" title=\"\" key=\"\" />\n",
+                    path, CSS_NAME);
+            pageContext.getOut().print(tag);
         } catch (Exception e) {
             throw new JspException("Failed to write jahia:resource tag for bootstrap", e);
         }
