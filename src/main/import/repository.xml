@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<content xmlns:j="http://www.jahia.org/jahia/1.0"
-         xmlns:jcr="http://www.jcp.org/jcr/1.0"
-         xmlns:jmix="http://www.jahia.org/jahia/mix/1.0"
-         xmlns:jnt="http://www.jahia.org/jahia/nt/1.0">
+<content xmlns:j="http://www.jahia.org/jahia/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
     <modules jcr:primaryType="jnt:modules">
         <bootstrap j:dependencies="default siteSettings skins"
                  j:moduleType="module"
@@ -22,8 +19,6 @@
                                                   jcr:mixinTypes="jmix:image"
                                                   jcr:primaryType="jnt:file">
                                 <jcr:content jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
-                                <thumbnail jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
-                                <thumbnail2 jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
                             </glyphicons-halflings-white.png>
                             <glyphicons-halflings.png j:height="159"
                                             j:width="469"
@@ -184,5 +179,4 @@
                 
             </bootstrap>
     </modules>
-    
 </content>
