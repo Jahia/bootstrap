@@ -42,7 +42,7 @@
     <fmt:param value="${selectedFile}"/>
     <fmt:param value="${currentDate}"/>
 </fmt:message>
-<template:tokenizedForm>
+<template:tokenizedForm disableXSSFiltering="true">
     <form id="customizeBootstrap${renderContext.mainResource.node.identifier}"
           action="<c:url value='${url.base}${renderContext.site.path}.customizeBootstrap.do'/>" method="post">
         <jcr:node path="${renderContext.site.path}/files/less/${selectedFile}/jcr:content" var="lessVariables"/>
