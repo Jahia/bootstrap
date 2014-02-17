@@ -72,14 +72,8 @@ public class BootstrapCompilerRuleService {
             NodeIterator nodes = lessFolder.getNodes();
             copyDirectory(tmpLessFolder, nodes);
             JCRSiteNode site = node.getResolveSite();
-            boolean isResponsive = site.hasProperty("responsive") && site.getProperty("responsive").getBoolean();
             File bootstrapCss = new File(tmpLessFolder, BOOTSTRAP_CSS);
             lessCompiler.compile(new File(tmpLessFolder, "bootstrap.less"), bootstrapCss);
-            File responsiveCss = null;
-            if (isResponsive) {
-                responsiveCss = new File(tmpLessFolder, RESPONSIVE_CSS);
-                lessCompiler.compile(new File(tmpLessFolder, "responsive.less"), responsiveCss);
-            }
             JCRNodeWrapper files = lessFolder.getParent();
             JCRNodeWrapper bootstrapFolder;
             if (files.hasNode(BOOTSTRAP_FOLDER)) {
@@ -97,14 +91,12 @@ public class BootstrapCompilerRuleService {
             JCRNodeWrapper bootstrapCssNode;
             if (cssFolder.hasNode(BOOTSTRAP_CSS)) {
                 bootstrapCssNode = cssFolder.getNode(BOOTSTRAP_CSS);
-                uploadCss = !IOUtils.contentEquals(bootstrapCssNode.getFileContent().downloadFile(), getCSSInputStream(
-                        isResponsive, bootstrapCss, responsiveCss));
+                uploadCss = !IOUtils.contentEquals(bootstrapCssNode.getFileContent().downloadFile(), new FileInputStream(bootstrapCss));
             } else {
                 bootstrapCssNode = cssFolder.addNode(BOOTSTRAP_CSS, "jnt:file");
             }
             if (uploadCss) {
-                bootstrapCssNode.getFileContent().uploadFile(getCSSInputStream(isResponsive, bootstrapCss, responsiveCss),
-                        "text/css");
+                bootstrapCssNode.getFileContent().uploadFile(new FileInputStream(bootstrapCss),"text/css");
                 node.getSession().save();
             }
         } finally {
@@ -123,15 +115,6 @@ public class BootstrapCompilerRuleService {
                 IOUtils.copy(n.getFileContent().downloadFile(), new FileOutputStream(new File(tmpLessFolder,
                         n.getName())));
             }
-        }
-    }
-
-    private InputStream getCSSInputStream(boolean isResponsive, File bootstrapCss, File responsiveCss)
-            throws FileNotFoundException {
-        if (isResponsive) {
-            return new SequenceInputStream(new FileInputStream(bootstrapCss), new FileInputStream(responsiveCss));
-        } else {
-            return new FileInputStream(bootstrapCss);
         }
     }
 

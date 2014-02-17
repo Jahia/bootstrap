@@ -55,8 +55,9 @@
         <input type="hidden" value="${selectedFile}" name="selectedFile"/>
         <div id="footer${renderContext.mainResource.node.identifier}" style="margin-top: 10px">
             <label class="checkbox">
+                <jcr:node path="${renderContext.site.path}/files/less/bootstrap.less" var="bootstrapFile"/>
                 <input type="checkbox" name="responsive"
-                       value="true"${renderContext.site.properties.responsive.boolean ? ' checked="checked"' : ''} /><fmt:message
+                       value="true"${fn:contains(bootstrapFile.fileContent.text,"\"responsive.less\"" ) ? ' checked="checked"' : ''} /><fmt:message
                     key="jmix_bootstrapSite.responsive"/>
             </label>
             <button class="btn btn-primary" type="submit" name="save" onclick="workInProgress('${i18nWaiting}')">

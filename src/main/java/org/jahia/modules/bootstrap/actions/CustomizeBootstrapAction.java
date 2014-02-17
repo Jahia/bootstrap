@@ -40,10 +40,12 @@
 
 package org.jahia.modules.bootstrap.actions;
 
+import org.apache.commons.lang.StringUtils;
 import org.jahia.bin.Action;
 import org.jahia.bin.ActionResult;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.JCRSessionWrapper;
+import org.jahia.services.content.decorator.JCRFileNode;
 import org.jahia.services.render.RenderContext;
 import org.jahia.services.render.Resource;
 import org.jahia.services.render.URLResolver;
@@ -65,12 +67,12 @@ public class CustomizeBootstrapAction extends Action {
         }
         List<String> responsive = parameters.get("responsive");
         boolean isBootstrapResponsive = responsive != null && !responsive.isEmpty();
-        JCRNodeWrapper site = resource.getNode();
-        if (!site.isNodeType("jmix:bootstrapSite")) {
-            site.addMixin("jmix:bootstrapSite");
-        }
-        if (!site.hasProperty("responsive") || site.getProperty("responsive").getBoolean() != isBootstrapResponsive) {
-            site.setProperty("responsive", isBootstrapResponsive);
+        if (isBootstrapResponsive) {
+            JCRFileNode bootstrapLess = (JCRFileNode) session.getNode(renderContext.getSite().getPath() + "/files/less/bootstrap.less");
+            bootstrapLess.getFileContent().uploadFile(new ByteArrayInputStream((bootstrapLess.getFileContent().getText() + "\n@import \"responsive.less\";").getBytes("UTF-8")), "text/x-less");
+        } else {
+            JCRFileNode bootstrapLess = (JCRFileNode) session.getNode(renderContext.getSite().getPath() + "/files/less/bootstrap.less");
+            bootstrapLess.getFileContent().uploadFile(new ByteArrayInputStream((StringUtils.remove(bootstrapLess.getFileContent().getText(), "\n@import \"responsive.less\";")).getBytes("UTF-8")), "text/x-less");
         }
         JCRNodeWrapper lessVariables = session.getNode(renderContext.getSite().getPath() + "/files/less/"+parameters.get("selectedFile").get(0));
         lessVariables.getFileContent().uploadFile(new ByteArrayInputStream(variables.get(0).getBytes("UTF-8")), "text/x-less");
