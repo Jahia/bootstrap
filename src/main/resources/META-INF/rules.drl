@@ -34,6 +34,7 @@ rule "Set bootstrap folder ACL"
     Grant role editor on the node to the group site-administrators
     Grant role reader on the node to the group users
     Grant role reader on the node to the user guest
+    Grant role privileged on the node to the group privileged
 end
 
 rule "Compile Bootstrap"
