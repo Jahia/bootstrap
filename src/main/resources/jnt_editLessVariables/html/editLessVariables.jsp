@@ -14,6 +14,7 @@
 <%--@elvariable id="renderContext" type="org.jahia.services.render.RenderContext"--%>
 <%--@elvariable id="currentResource" type="org.jahia.services.render.Resource"--%>
 <%--@elvariable id="url" type="org.jahia.services.render.URLGenerator"--%>
+<c:if test="${renderContext.mode != 'studiovisual'}">
 <template:addResources type="javascript"
                        resources="jquery.min.js,jquery.blockUI.js,workInProgress.js,codemirror/lib/codemirror.js,codemirror/mode/less/less.js"/>
 <template:addResources type="css" resources="codemirror/codemirror.css"/>
@@ -95,3 +96,7 @@
     setCodeMirrorSize();
     $(window).resize(setCodeMirrorSize);
 </script>
+</c:if>
+<c:if test="${renderContext.mode == 'studiovisual'}">
+${fn:escapeXml(currentNode.displayableName)}
+</c:if>
