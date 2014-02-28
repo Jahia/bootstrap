@@ -72,8 +72,8 @@ public class CustomizeBootstrapAction extends Action {
             if (site.hasNode(BOOTSTRAP_VARIABLES)) {
                 site.getNode(BOOTSTRAP_VARIABLES).remove();
                 session.save();
-                bootstrapCompiler.compileBootstrapWithVariables(site, null);
             }
+            bootstrapCompiler.compileBootstrapWithVariables(site, null);
             return ActionResult.OK;
         }
 
