@@ -5,7 +5,14 @@
 
     <bean id="LessCompiler" class="org.lesscss.LessCompiler" />
 
-    <bean class="org.jahia.modules.bootstrap.actions.CustomizeBootstrapAction" />
+    <bean id="BootstrapCompiler" class="org.jahia.modules.bootstrap.rules.BootstrapCompiler" init-method="init">
+        <property name="lessCompiler" ref="LessCompiler" />
+        <property name="jahiaTemplateManagerService" ref="JahiaTemplateManagerService" />
+    </bean>
+
+    <bean class="org.jahia.modules.bootstrap.actions.CustomizeBootstrapAction">
+        <property name="bootstrapCompiler" ref="BootstrapCompiler" />
+    </bean>
 
     <bean class="org.jahia.modules.bootstrap.actions.PublishBootstrapAction">
         <property name="publicationService" ref="jcrPublicationService"/>
@@ -14,11 +21,7 @@
     <bean class="org.jahia.services.content.rules.ModuleGlobalObject">
         <property name="globalRulesObject">
             <map>
-                <entry key="bootstrapCompiler">
-                    <bean class="org.jahia.modules.bootstrap.rules.BootstrapCompilerRuleService">
-                        <property name="lessCompiler" ref="LessCompiler" />
-                    </bean>
-                </entry>
+                <entry key="bootstrapCompiler" value-ref="BootstrapCompiler"/>
             </map>
         </property>
     </bean>

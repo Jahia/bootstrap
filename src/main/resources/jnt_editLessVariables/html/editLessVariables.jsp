@@ -17,83 +17,71 @@
 <%--@elvariable id="url" type="org.jahia.services.render.URLGenerator"--%>
 <c:if test="${renderContext.mode != 'studiovisual'}">
 <template:addResources type="javascript"
-                       resources="jquery.min.js,jquery.blockUI.js,workInProgress.js,codemirror/lib/codemirror.js,codemirror/mode/less/less.js"/>
-<template:addResources type="css" resources="codemirror/codemirror.css"/>
+                       resources="jquery.min.js,jquery.blockUI.js,workInProgress.js"/>
 <fmt:message key="label.workInProgressTitle" var="i18nWaiting"/><c:set var="i18nWaiting" value="${functions:escapeJavaScript(i18nWaiting)}"/>
+<fmt:message key="siteSettings.bootstrap.reset.confirm" var="resetConfirm"/>
 
-<h2 id="header${renderContext.mainResource.node.identifier}"><fmt:message key="siteSettings.label.bootstrap"/></h2>
-
-<c:set var="selectedFile" value="variables.less"/>
-<c:if test="${not empty param.fileNameSelector}">
-    <c:set var="selectedFile" value="${param.fileNameSelector}"/>
+<c:set var="formview" value="${currentNode.properties.formview.string}"/>
+<c:if test="${formview ne 'advanced'}">
+    <c:set var="switchFormUrl" value="${url.base}${renderContext.mainResource.node.path}.${renderContext.mainResource.template}.html"/>
+    <c:if test="${empty param.formview}">
+        <a class="btn btn-small pull-right" href="<c:url value='${switchFormUrl}?formview=advanced'/>"><i class="icon-resize-full"></i> <fmt:message key="siteSettings.label.bootstrap.form.advanced"/></a>
+    </c:if>
+    <c:if test="${not empty param.formview}">
+        <a class="btn btn-small pull-right" href="<c:url value='${switchFormUrl}'/>"><i class="icon-resize-small"></i> <fmt:message key="siteSettings.label.bootstrap.form.simple"/></a>
+    </c:if>
 </c:if>
-<template:tokenizedForm>
-    <form id="fileSelector" method="get" action="<c:url value='${url.base}${renderContext.site.path}.bootstrapCustomization.html'/>">
-        <select name="fileNameSelector">
-            <query:definition var="listQuery" statement="select * from [jnt:file] where ischildnode([${renderContext.site.path}/files/less]) order by localname() asc" />
-            <jcr:jqom var="result" qomBeanName="listQuery"/>
-            <c:forEach items="${result.nodes}" var="fileNodes">
-                <option value="${fileNodes.name}" <c:if test="${selectedFile eq fileNodes.name}">selected="selected" </c:if>>${fileNodes.displayableName}</option>
-            </c:forEach>
-        </select>
-        <button class="btn btn-primary" type="submit"><fmt:message key='siteSettings.bootstrap.select.file'/></button>
-    </form>
-</template:tokenizedForm>
-<template:tokenizedForm disableXSSFiltering="true">
-    <form id="customizeBootstrap${renderContext.mainResource.node.identifier}"
-          action="<c:url value='${url.base}${renderContext.site.path}.customizeBootstrap.do'/>" method="post">
-        <div id="customizeButtons${renderContext.mainResource.node.identifier}">
-            <label class="checkbox pull-left" style="margin-right: 5px">
-                <jcr:node path="${renderContext.site.path}/files/less/bootstrap.less" var="bootstrapFile"/>
-                <input type="checkbox" name="responsive"
-                       value="true"${fn:contains(bootstrapFile.fileContent.text,"\"responsive.less\"" ) ? ' checked="checked"' : ''} /><fmt:message
-                    key="jmix_bootstrapSite.responsive" />
-            </label>
-            <button class="btn btn-primary" type="submit" name="save" onclick="workInProgress('${i18nWaiting}')">
-                <i class="icon-ok icon-white"></i> <fmt:message key='siteSettings.bootstrap.saveAndCompile'><fmt:param value="${selectedFile}"/></fmt:message>
-            </button>
-            <jcr:node path="${renderContext.site.path}/files/bootstrap" var="bootstrapFolder"/>
-            <c:set var="needPublication" value="${jcr:needPublication(bootstrapFolder, null, false, true, true)}"/>
-            <button class="btn${needPublication ? '' : ' disabled'}" type="button" name="publish"
-                    <c:if test="${needPublication}">onclick="workInProgress('${i18nWaiting}'); $('#publishBootstrap${renderContext.mainResource.node.identifier}').submit()"</c:if>>
-                <i class="icon-globe"></i> <fmt:message key='siteSettings.bootstrap.publishCSS'/>
-            </button>
-        </div>
-        <h2 id="currentFile${renderContext.mainResource.node.identifier}"><fmt:message key="siteSettings.bootstrap.currentFile" /> : <span class="text-success">${selectedFile}</span></h2>
-        <jcr:node path="${renderContext.site.path}/files/less/${selectedFile}/jcr:content" var="lessVariables"/>
-        <jcr:nodeProperty node="${lessVariables}" name="jcr:data" var="data"/>
-        <textarea id="variables" name="variables"><c:out value="${data.string}"/></textarea>
-        <input type="hidden" name="jcrRedirectTo"
-               value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
-        <input type="hidden" name="jcrNewNodeOutputFormat"
-               value="<c:url value='${renderContext.mainResource.template}.html'/>">
-        <input type="hidden" value="${selectedFile}" name="selectedFile"/>
-    </form>
-</template:tokenizedForm>
-<template:tokenizedForm>
-    <form id="publishBootstrap${renderContext.mainResource.node.identifier}"
-          action="<c:url value='${url.base}${renderContext.site.path}.publishBootstrap.do'/>" method="post">
-        <input type="hidden" name="jcrRedirectTo"
-               value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
-        <input type="hidden" name="jcrNewNodeOutputFormat"
-               value="<c:url value='${renderContext.mainResource.template}.html'/>">
-    </form>
-</template:tokenizedForm>
-<script type="text/javascript">
-    var myCodeMirror = CodeMirror.fromTextArea(document.getElementById("variables"),
-            {mode: "less", lineNumbers: true, matchBrackets: true});
 
-    function setCodeMirrorSize() {
-        myCodeMirror.setSize("100%", $(window).height() - $(".page-header").outerHeight(true) -
-                                     $("#header${renderContext.mainResource.node.identifier}").outerHeight(true) -
-                                     $("#customizeButtons${renderContext.mainResource.node.identifier}").outerHeight(true) -
-                                     $("#currentFile${renderContext.mainResource.node.identifier}").outerHeight(true) -
-                                     $("#publishBootstrap${renderContext.mainResource.node.identifier}").outerHeight(true) -
-                                     $("#fileSelector").outerHeight(true));
-    }
-    setCodeMirrorSize();
-    $(window).resize(setCodeMirrorSize);
-</script>
+<h1 id="header${renderContext.mainResource.node.identifier}"><fmt:message key="siteSettings.label.bootstrap"/></h1>
+
+<form id="customizeBootstrap${renderContext.mainResource.node.identifier}"
+    action="<c:url value='${url.base}${renderContext.site.path}.customizeBootstrap.do'/>" method="post"
+    onsubmit="workInProgress('${i18nWaiting}')">
+
+    <c:if test="${not empty param.formview}">
+        <c:set var="formview" value="${param.formview}"/>
+    </c:if>
+    <c:if test="${formview ne 'default'}">
+        <template:include view="${formview}" />
+    </c:if>
+
+    <input type="hidden" name="jcrRedirectTo"
+           value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
+    <input type="hidden" name="jcrNewNodeOutputFormat"
+           value="<c:url value='${renderContext.mainResource.template}.html'/>">
+    <button class="btn btn-primary" type="submit">
+        <i class="icon-ok icon-white"></i> <fmt:message key='siteSettings.bootstrap.saveAndCompile'/>
+    </button>
+    <button class="btn btn-danger" type="button" onclick="if (confirm('${resetConfirm}')) {$('#resetVariables${renderContext.mainResource.node.identifier}').submit()}">
+        <i class="icon-refresh icon-white"></i> <fmt:message key='siteSettings.bootstrap.reset'/>
+    </button>
+    <jcr:node path="${renderContext.site.path}/files/bootstrap" var="bootstrapFolder"/>
+    <c:set var="needPublication" value="${jcr:needPublication(bootstrapFolder, null, false, true, true)}"/>
+    <button class="btn${needPublication ? '' : ' disabled'}" type="button" name="publish"
+            <c:if test="${needPublication}">onclick="$('#publishBootstrap${renderContext.mainResource.node.identifier}').submit()"</c:if>>
+        <i class="icon-globe"></i> <fmt:message key='siteSettings.bootstrap.publishCSS'/>
+    </button>
+</form>
+
+<form id="resetVariables${renderContext.mainResource.node.identifier}"
+      action="<c:url value='${url.base}${renderContext.site.path}.customizeBootstrap.do'/>" method="post"
+      onsubmit="workInProgress('${i18nWaiting}')">
+    <input type="hidden" name="resetVariables" value="true"/>
+    <input type="hidden" name="jcrRedirectTo"
+           value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
+    <input type="hidden" name="jcrNewNodeOutputFormat"
+           value="<c:url value='${renderContext.mainResource.template}.html'/>">
+</form>
+
+<form id="publishBootstrap${renderContext.mainResource.node.identifier}"
+      action="<c:url value='${url.base}${renderContext.site.path}.publishBootstrap.do'/>" method="post"
+      onsubmit="workInProgress('${i18nWaiting}')">
+    <input type="hidden" name="jcrRedirectTo"
+           value="<c:url value='${url.base}${renderContext.mainResource.node.path}'/>"/>
+    <input type="hidden" name="jcrNewNodeOutputFormat"
+           value="<c:url value='${renderContext.mainResource.template}.html'/>">
+</form>
+
 </c:if>
 <c:if test="${renderContext.mode == 'studiovisual'}">
 ${fn:escapeXml(currentNode.displayableName)}

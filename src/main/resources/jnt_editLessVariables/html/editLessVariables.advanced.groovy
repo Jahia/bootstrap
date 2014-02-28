@@ -1,0 +1,97 @@
+import org.apache.commons.io.IOUtils
+import org.jahia.data.templates.JahiaTemplatesPackage
+import org.jahia.modules.bootstrap.actions.CustomizeBootstrapAction
+import org.jahia.registries.ServicesRegistry
+import org.jahia.services.content.JCRNodeWrapper
+import org.jahia.services.content.decorator.JCRSiteNode
+import org.jahia.services.templates.JahiaTemplateManagerService
+import org.springframework.core.io.Resource
+
+def getVariables(JahiaTemplatesPackage aPackage) {
+    Resource r = aPackage.getResource("less/variables.less")
+    if (r != null && r.exists()) {
+        StringWriter writer = new StringWriter();
+        IOUtils.copy(r.getInputStream(), writer);
+        return writer.toString();
+    }
+    return null
+}
+
+JCRSiteNode site = renderContext.mainResource.node.resolveSite
+String templatesSetName = site.getProperty("j:templatesSet").getString()
+JahiaTemplateManagerService jahiaTemplateManagerService = ServicesRegistry.getInstance().getJahiaTemplateManagerService()
+JahiaTemplatesPackage templatesSet = jahiaTemplateManagerService.getTemplatePackageById(templatesSetName)
+def variables
+if (templatesSet != null) {
+    variables = getVariables(templatesSet)
+}
+if (variables == null) {
+    JahiaTemplatesPackage bootstrapModule = jahiaTemplateManagerService.getTemplatePackageById("bootstrap")
+    if (bootstrapModule != null) {
+        variables = getVariables(bootstrapModule)
+    }
+}
+
+if (variables != null) {
+    JCRNodeWrapper variablesNode
+    if (site.hasNode(CustomizeBootstrapAction.BOOTSTRAP_VARIABLES)) {
+        variablesNode = site.getNode(CustomizeBootstrapAction.BOOTSTRAP_VARIABLES)
+    }
+
+    def previousLine
+    def fieldsetOpened = false
+    variables.eachLine { line ->
+        if (line.startsWith("//") && line.length() > 2) {
+            text = line.substring(2).trim()
+            if (previousLine != null) {
+                if (text == "--------------------------------------------------") {
+                    if (fieldsetOpened) {
+                        println "</fieldset>"
+                        fieldsetOpened = false
+                    }
+                    println "<h2>$previousLine</h2>"
+                    previousLine = null
+                } else if (text == "-------------------------") {
+                    if (fieldsetOpened) {
+                        println "</fieldset>"
+                    }
+                    println "<fieldset class=\"box-1\">"
+                    println "<legend>$previousLine</legend>"
+                    fieldsetOpened = true
+                    previousLine = null
+                } else {
+                    previousLine += "<br/>\n" + text
+                }
+            } else {
+                previousLine = text
+            }
+        } else {
+            if (previousLine != null) {
+                println '<span class="help-block">' + previousLine + '</span>'
+                previousLine = null
+            }
+            if (line.startsWith("@")) {
+                matcher = ( line =~ /@([\w-]+):\s+([^;]+);(?:\s*\/\/\s*(.+))?/ )
+                if (matcher.matches()) {
+                    println '<label><div class="row-fluid">'
+                    def variableName = matcher[0][1]
+                    println '<div class="span3">' + variableName + '</div>'
+                    def value
+                    if (variablesNode != null && variablesNode.hasProperty(variableName)) {
+                        value = variablesNode.getProperty(variableName).getString()
+                    } else {
+                        value = matcher[0][2]
+                    }
+                    println '<div class="span6"><input type="text" name="' + variableName + '" value="' + value.replace('"', '&quot;') + '" class="span12" /></div>'
+                    if (matcher[0][3] != null) {
+                        println '<div class="span3"><span class="help-inline">' + matcher[0][3] + '</span></div>'
+                    }
+                    println '</div></label>'
+                }
+            }
+        }
+    }
+    if (fieldsetOpened) {
+        println "</fieldset>"
+    }
+}

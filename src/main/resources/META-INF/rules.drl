@@ -12,16 +12,7 @@ global User user
 global Service service
 global Logger logger
 global JCRContentUtils jcrUtils
-global BootstrapCompilerRuleService bootstrapCompiler
-
-rule "Set less folder ACL"
-  when
-    A new node is created
-      - the node has the type jnt:folder
-      - its path matches /sites/[\\p{Alnum}\\-_]+/files/less
-  then
-    Break all ACL inheritance on the node
-end
+global BootstrapCompiler bootstrapCompiler
 
 rule "Set bootstrap folder ACL"
   when
@@ -35,12 +26,14 @@ rule "Set bootstrap folder ACL"
     Grant role privileged on the node to the group privileged
 end
 
-rule "Compile Bootstrap"
+rule "Compile templatesSet bootstrap.css"
   when
-    A file content has been modified
-      - its path matches /sites/[\\p{Alnum}\\-_]+/files/less/[\\p{Alnum}\\-_]+.less
-    The node has not been copied
+    A property j:deployementDate has been set on a node
+      - the node has the type jnt:versionInfo
     The node has a parent
+     - the parent has the type jnt:moduleVersion
+    The property j:moduleType has the value "templatesSet" on the parent
+    The property j:dependencies contains the value "bootstrap" on the parent
   then
-    Compile the parent to css
+    Compile bootstrap.css for the parent
 end

@@ -43,9 +43,11 @@ package org.jahia.modules.bootstrap.actions;
 import org.apache.commons.lang.StringUtils;
 import org.jahia.bin.Action;
 import org.jahia.bin.ActionResult;
+import org.jahia.modules.bootstrap.rules.BootstrapCompiler;
 import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.JCRSessionWrapper;
 import org.jahia.services.content.decorator.JCRFileNode;
+import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.render.RenderContext;
 import org.jahia.services.render.Resource;
 import org.jahia.services.render.URLResolver;
@@ -57,27 +59,52 @@ import java.util.Map;
 
 public class CustomizeBootstrapAction extends Action {
 
+    public static final String BOOTSTRAP_VARIABLES = "bootstrapVariables";
+
+    private BootstrapCompiler bootstrapCompiler;
+
     @Override
     public ActionResult doExecute(HttpServletRequest request, RenderContext renderContext, Resource resource,
                                   JCRSessionWrapper session, Map<String, List<String>> parameters,
                                   URLResolver urlResolver) throws Exception {
-        List<String> variables = parameters.get("variables");
-        if (variables == null || variables.isEmpty()) {
-            return ActionResult.BAD_REQUEST;
+        JCRSiteNode site = renderContext.getSite();
+        if (parameters.keySet().contains("resetVariables")) {
+            if (site.hasNode(BOOTSTRAP_VARIABLES)) {
+                site.getNode(BOOTSTRAP_VARIABLES).remove();
+                session.save();
+                bootstrapCompiler.compileBootstrapWithVariables(site, null);
+            }
+            return ActionResult.OK;
         }
-        List<String> responsive = parameters.get("responsive");
-        boolean isBootstrapResponsive = responsive != null && !responsive.isEmpty();
-        if (isBootstrapResponsive) {
-            JCRFileNode bootstrapLess = (JCRFileNode) session.getNode(renderContext.getSite().getPath() + "/files/less/bootstrap.less");
-            bootstrapLess.getFileContent().uploadFile(new ByteArrayInputStream((bootstrapLess.getFileContent().getText() + "\n@import \"responsive.less\";").getBytes("UTF-8")), "text/x-less");
+
+        JCRNodeWrapper variablesNode;
+        if (site.hasNode(BOOTSTRAP_VARIABLES)) {
+            variablesNode = site.getNode(BOOTSTRAP_VARIABLES);
         } else {
-            JCRFileNode bootstrapLess = (JCRFileNode) session.getNode(renderContext.getSite().getPath() + "/files/less/bootstrap.less");
-            bootstrapLess.getFileContent().uploadFile(new ByteArrayInputStream((StringUtils.remove(bootstrapLess.getFileContent().getText(), "\n@import \"responsive.less\";")).getBytes("UTF-8")), "text/x-less");
+            variablesNode = site.addNode(BOOTSTRAP_VARIABLES, "jnt:lessVariables");
         }
-        JCRNodeWrapper lessVariables = session.getNode(renderContext.getSite().getPath() + "/files/less/"+parameters.get("selectedFile").get(0));
-        lessVariables.getFileContent().uploadFile(new ByteArrayInputStream(variables.get(0).getBytes("UTF-8")), "text/x-less");
+        StringBuilder variablesLessBuilder = new StringBuilder("\n");
+        for (String varName : parameters.keySet()) {
+            if ("jcrRedirectTo".equals(varName) || "jcrNewNodeOutputFormat".equals(varName)) {
+                continue;
+            }
+            List<String> varValues = parameters.get(varName);
+            if (varValues == null || varValues.isEmpty() || StringUtils.isBlank(varValues.get(0))) {
+                if (variablesNode.hasProperty(varName)) {
+                    variablesNode.getProperty(varName).remove();
+                }
+            } else {
+                String varValue = varValues.get(0);
+                variablesNode.setProperty(varName, varValue);
+                variablesLessBuilder.append("@").append(varName).append(":\t").append(varValue).append(";\n");
+            }
+        }
         session.save();
+        bootstrapCompiler.compileBootstrapWithVariables(site, variablesLessBuilder.toString());
         return ActionResult.OK;
     }
 
+    public void setBootstrapCompiler(BootstrapCompiler bootstrapCompiler) {
+        this.bootstrapCompiler = bootstrapCompiler;
+    }
 }
