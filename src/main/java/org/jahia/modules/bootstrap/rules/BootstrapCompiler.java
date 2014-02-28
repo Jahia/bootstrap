@@ -85,18 +85,13 @@ public class BootstrapCompiler implements JahiaModuleAware {
         if (module == null) {
             return;
         }
-        final File sourcesFolder = module.getSourcesFolder();
-        if (sourcesFolder == null || !sourcesFolder.exists()) {
-            return;
-        }
         try {
             JCRTemplate.getInstance().doExecuteWithSystemSession(new JCRCallback<Object>() {
                 public Object doInJCR(JCRSessionWrapper session) throws RepositoryException {
                     JCRNodeWrapper moduleVersion = session.getNode("/modules/" + module.getIdWithVersion());
                     Resource[] lessResources = module.getResources(LESS_RESOURCES_FOLDER);
-//                    File bootstrapImportFolder = new File(sourcesFolder, String.format(BOOTSTRAP_CSS_IMPORT_PATH, module.getId()));
                     try {
-                        compileBootstrap(moduleVersion, Arrays.asList(lessResources), null, null);
+                        compileBootstrap(moduleVersion, Arrays.asList(lessResources), null);
                     } catch (IOException e) {
                         new RepositoryException(e);
                     } catch (LessException e) {
@@ -119,10 +114,6 @@ public class BootstrapCompiler implements JahiaModuleAware {
         JCRNodeWrapper moduleVersion = nodeFact.getNode();
         String templatesSetName = moduleVersion.getParent().getName();
         JahiaTemplatesPackage templatesSet = jahiaTemplateManagerService.getTemplatePackageRegistry().lookupByIdAndVersion(templatesSetName, new ModuleVersion(moduleVersion.getName()));
-        File sourcesFolder = templatesSet.getSourcesFolder();
-        if (sourcesFolder == null || !sourcesFolder.exists()) {
-            return;
-        }
         Resource[] templatesSetLessResources = templatesSet.getResources(LESS_RESOURCES_FOLDER);
         // no need to compile bootstrap.css if the templatesSet doesn't contain any less files
         if (templatesSetLessResources.length == 0) {
@@ -130,8 +121,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
         }
         ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(templatesSetLessResources));
         lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
-//        File bootstrapImportFolder = new File(sourcesFolder, String.format(BOOTSTRAP_CSS_IMPORT_PATH, templatesSetName));
-        compileBootstrap(moduleVersion, lessResources, null, null);
+        compileBootstrap(moduleVersion, lessResources, null);
     }
 
     public void compileBootstrapWithVariables(JCRSiteNode site, String variables) throws RepositoryException, IOException, LessException {
@@ -141,10 +131,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
         JahiaTemplatesPackage templatesSet = jahiaTemplateManagerService.getTemplatePackageById(site.getProperty("j:templatesSet").getString());
         ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(templatesSet.getResources(LESS_RESOURCES_FOLDER)));
         lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
-        compileBootstrap(site, lessResources, null, variables);
+        compileBootstrap(site, lessResources, variables);
     }
 
-    private void compileBootstrap(JCRNodeWrapper siteOrModuleVersion, List<Resource> lessResources, File bootstrapImportFolder, String variables) throws IOException, LessException, RepositoryException {
+    private void compileBootstrap(JCRNodeWrapper siteOrModuleVersion, List<Resource> lessResources, String variables) throws IOException, LessException, RepositoryException {
         if (lessResources != null && !lessResources.isEmpty()) {
             File tmpLessFolder = new File(FileUtils.getTempDirectory(), "less-" + System.currentTimeMillis());
             tmpLessFolder.mkdir();
