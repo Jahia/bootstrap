@@ -14,7 +14,7 @@ global Logger logger
 global JCRContentUtils jcrUtils
 global BootstrapCompiler bootstrapCompiler
 
-rule "Set bootstrap folder ACL"
+rule "Set bootstrap folder ACL and publish it"
   when
     A new node is created
       - the node has the type jnt:folder
@@ -24,6 +24,7 @@ rule "Set bootstrap folder ACL"
     Grant role reader on the node to the group users
     Grant role reader on the node to the user guest
     Grant role privileged on the node to the group privileged
+    Publish subtree rooted at that node
 end
 
 rule "Compile templatesSet bootstrap.css"

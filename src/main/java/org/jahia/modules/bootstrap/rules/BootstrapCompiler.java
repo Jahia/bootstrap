@@ -44,11 +44,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.drools.core.spi.KnowledgeHelper;
+import org.jahia.api.Constants;
 import org.jahia.data.templates.JahiaTemplatesPackage;
-import org.jahia.services.content.JCRCallback;
-import org.jahia.services.content.JCRNodeWrapper;
-import org.jahia.services.content.JCRSessionWrapper;
-import org.jahia.services.content.JCRTemplate;
+import org.jahia.services.content.*;
 import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.content.rules.AddedNodeFact;
 import org.jahia.services.templates.JahiaModuleAware;
@@ -62,9 +60,7 @@ import org.springframework.core.io.Resource;
 
 import javax.jcr.RepositoryException;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class BootstrapCompiler implements JahiaModuleAware {
 
@@ -78,6 +74,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
 
     private LessCompiler lessCompiler;
     private JahiaTemplateManagerService jahiaTemplateManagerService;
+    private JCRPublicationService publicationService;
     private JahiaTemplatesPackage module;
 
 
@@ -106,7 +103,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
 
     }
 
-    public void compile(AddedNodeFact nodeFact, KnowledgeHelper drools)
+    public void compile(AddedNodeFact nodeFact)
             throws RepositoryException, IOException, LessException {
         if (module == null) {
             return;
@@ -182,7 +179,21 @@ public class BootstrapCompiler implements JahiaModuleAware {
                 FileUtils.deleteQuietly(tmpLessFolder);
             }
         }
-     }
+    }
+
+    public void publish(AddedNodeFact nodeFact) throws RepositoryException {
+        publishBootstrapFolder(nodeFact.getNode());
+    }
+
+    public void publishBootstrapFolder(JCRNodeWrapper bootstrapFolder) throws RepositoryException {
+//        Set<String> languages = null;
+//        JCRSessionWrapper session = bootstrapFolder.getSession();
+//        if (session.getLocale() != null) {
+//            languages = Collections.singleton(session.getLocale().toString());
+//        }
+        List<PublicationInfo> tree = publicationService.getPublicationInfo(bootstrapFolder.getIdentifier(), null, true, true, true, Constants.EDIT_WORKSPACE, Constants.LIVE_WORKSPACE);
+        publicationService.publishByInfoList(tree, Constants.EDIT_WORKSPACE, Constants.LIVE_WORKSPACE, false, new ArrayList<String>());
+    }
 
     public void setLessCompiler(LessCompiler lessCompiler) {
         this.lessCompiler = lessCompiler;
@@ -190,6 +201,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
 
     public void setJahiaTemplateManagerService(JahiaTemplateManagerService jahiaTemplateManagerService) {
         this.jahiaTemplateManagerService = jahiaTemplateManagerService;
+    }
+
+    public void setPublicationService(JCRPublicationService publicationService) {
+        this.publicationService = publicationService;
     }
 
     @Override

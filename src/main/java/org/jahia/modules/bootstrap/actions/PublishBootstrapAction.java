@@ -40,37 +40,31 @@
 
 package org.jahia.modules.bootstrap.actions;
 
-import org.jahia.api.Constants;
 import org.jahia.bin.Action;
 import org.jahia.bin.ActionResult;
+import org.jahia.modules.bootstrap.rules.BootstrapCompiler;
 import org.jahia.services.content.JCRNodeWrapper;
-import org.jahia.services.content.JCRPublicationService;
 import org.jahia.services.content.JCRSessionWrapper;
-import org.jahia.services.content.PublicationInfo;
 import org.jahia.services.render.RenderContext;
 import org.jahia.services.render.Resource;
 import org.jahia.services.render.URLResolver;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 public class PublishBootstrapAction extends Action {
 
-    private JCRPublicationService publicationService;
+    private BootstrapCompiler bootstrapCompiler;
 
     @Override
     public ActionResult doExecute(HttpServletRequest req, RenderContext renderContext, Resource resource, JCRSessionWrapper session, Map<String, List<String>> parameters, URLResolver urlResolver) throws Exception {
-        Set<String> languages = null;
-        if (session.getLocale() != null) {
-            languages = Collections.singleton(session.getLocale().toString());
-        }
         JCRNodeWrapper bootstrapFolder = renderContext.getSite().getNode("files/bootstrap");
-        List<PublicationInfo> tree = publicationService.getPublicationInfo(bootstrapFolder.getIdentifier(), languages, true, true, true, Constants.EDIT_WORKSPACE, Constants.LIVE_WORKSPACE);
-        publicationService.publishByInfoList(tree, Constants.EDIT_WORKSPACE, Constants.LIVE_WORKSPACE, false, new ArrayList<String>());
+        bootstrapCompiler.publishBootstrapFolder(bootstrapFolder);
         return ActionResult.OK;
     }
 
-    public void setPublicationService(JCRPublicationService publicationService) {
-        this.publicationService = publicationService;
+    public void setBootstrapCompiler(BootstrapCompiler bootstrapCompiler) {
+        this.bootstrapCompiler = bootstrapCompiler;
     }
 }

@@ -8,6 +8,7 @@
     <bean id="BootstrapCompiler" class="org.jahia.modules.bootstrap.rules.BootstrapCompiler" init-method="init">
         <property name="lessCompiler" ref="LessCompiler" />
         <property name="jahiaTemplateManagerService" ref="JahiaTemplateManagerService" />
+        <property name="publicationService" ref="jcrPublicationService"/>
     </bean>
 
     <bean class="org.jahia.modules.bootstrap.actions.CustomizeBootstrapAction">
@@ -15,7 +16,7 @@
     </bean>
 
     <bean class="org.jahia.modules.bootstrap.actions.PublishBootstrapAction">
-        <property name="publicationService" ref="jcrPublicationService"/>
+        <property name="bootstrapCompiler" ref="BootstrapCompiler" />
     </bean>
 
     <bean class="org.jahia.services.content.rules.ModuleGlobalObject">
