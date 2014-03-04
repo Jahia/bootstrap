@@ -52,6 +52,7 @@ import org.jahia.services.content.rules.AddedNodeFact;
 import org.jahia.services.templates.JahiaModuleAware;
 import org.jahia.services.templates.JahiaTemplateManagerService;
 import org.jahia.services.templates.ModuleVersion;
+import org.jahia.services.templates.TemplatePackageRegistry;
 import org.lesscss.LessCompiler;
 import org.lesscss.LessException;
 import org.slf4j.Logger;
@@ -125,8 +126,16 @@ public class BootstrapCompiler implements JahiaModuleAware {
         if (module == null) {
             return;
         }
-        JahiaTemplatesPackage templatesSet = jahiaTemplateManagerService.getTemplatePackageById(site.getProperty("j:templatesSet").getString());
-        ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(templatesSet.getResources(LESS_RESOURCES_FOLDER)));
+
+        Set<JahiaTemplatesPackage> packages = new TreeSet<JahiaTemplatesPackage>(TemplatePackageRegistry.TEMPLATE_PACKAGE_COMPARATOR);
+        for (String s : site.getInstalledModulesWithAllDependencies()) {
+            packages.add(jahiaTemplateManagerService.getTemplatePackageById(s));
+        }
+        packages.remove(module);
+        ArrayList<Resource> lessResources = new ArrayList<Resource>();
+        for (JahiaTemplatesPackage aPackage : packages) {
+            lessResources.addAll(Arrays.asList(aPackage.getResources(LESS_RESOURCES_FOLDER)));
+        }
         lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
         compileBootstrap(site, lessResources, variables);
     }

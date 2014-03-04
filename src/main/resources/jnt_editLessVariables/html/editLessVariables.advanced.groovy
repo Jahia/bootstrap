@@ -5,6 +5,7 @@ import org.jahia.registries.ServicesRegistry
 import org.jahia.services.content.JCRNodeWrapper
 import org.jahia.services.content.decorator.JCRSiteNode
 import org.jahia.services.templates.JahiaTemplateManagerService
+import org.jahia.services.templates.TemplatePackageRegistry
 import org.springframework.core.io.Resource
 
 def getVariables(JahiaTemplatesPackage aPackage) {
@@ -18,15 +19,21 @@ def getVariables(JahiaTemplatesPackage aPackage) {
 }
 
 JCRSiteNode site = renderContext.mainResource.node.resolveSite
-String templatesSetName = site.getProperty("j:templatesSet").getString()
 JahiaTemplateManagerService jahiaTemplateManagerService = ServicesRegistry.getInstance().getJahiaTemplateManagerService()
-JahiaTemplatesPackage templatesSet = jahiaTemplateManagerService.getTemplatePackageById(templatesSetName)
+Set<JahiaTemplatesPackage> packages = new TreeSet<JahiaTemplatesPackage>(TemplatePackageRegistry.TEMPLATE_PACKAGE_COMPARATOR);
+for (String s : site.getInstalledModulesWithAllDependencies()) {
+    packages.add(jahiaTemplateManagerService.getTemplatePackageById(s));
+}
+JahiaTemplatesPackage bootstrapModule = jahiaTemplateManagerService.getTemplatePackageById("bootstrap")
+packages.remove(bootstrapModule);
 def variables
-if (templatesSet != null) {
-    variables = getVariables(templatesSet)
+for (JahiaTemplatesPackage aPackage : packages) {
+    variables = getVariables(aPackage)
+    if (variables != null) {
+        break;
+    }
 }
 if (variables == null) {
-    JahiaTemplatesPackage bootstrapModule = jahiaTemplateManagerService.getTemplatePackageById("bootstrap")
     if (bootstrapModule != null) {
         variables = getVariables(bootstrapModule)
     }
