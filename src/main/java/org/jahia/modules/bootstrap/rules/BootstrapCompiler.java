@@ -195,11 +195,6 @@ public class BootstrapCompiler implements JahiaModuleAware {
     }
 
     public void publishBootstrapFolder(JCRNodeWrapper bootstrapFolder) throws RepositoryException {
-//        Set<String> languages = null;
-//        JCRSessionWrapper session = bootstrapFolder.getSession();
-//        if (session.getLocale() != null) {
-//            languages = Collections.singleton(session.getLocale().toString());
-//        }
         List<PublicationInfo> tree = publicationService.getPublicationInfo(bootstrapFolder.getIdentifier(), null, true, true, true, Constants.EDIT_WORKSPACE, Constants.LIVE_WORKSPACE);
         publicationService.publishByInfoList(tree, Constants.EDIT_WORKSPACE, Constants.LIVE_WORKSPACE, false, new ArrayList<String>());
     }
