@@ -2,10 +2,43 @@
 <content xmlns:j="http://www.jahia.org/jahia/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
     <modules jcr:primaryType="jnt:modules">
         <bootstrap j:dependencies="default siteSettings skins"
+                 j:modulePriority="0"
                  j:moduleType="module"
                  j:title="bootstrap"
                  jcr:mixinTypes="jmix:hasExternalProviderExtension"
                  jcr:primaryType="jnt:module">
+                
+                <templates j:rootTemplatePath="/base" jcr:primaryType="jnt:templatesFolder">
+                    <files jcr:primaryType="jnt:folder">
+                        <bootstrap.png j:height="16"
+                              j:width="16"
+                              jcr:mixinTypes="jmix:image"
+                              jcr:primaryType="jnt:file">
+                            <jcr:content jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
+                            <thumbnail jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
+                            <thumbnail2 jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
+                        </bootstrap.png>
+                    </files>
+                    <contents jcr:primaryType="jnt:contentFolder"/>
+                    <site-settings-base j:view="siteSettings"
+                                jcr:mixinTypes="jmix:useUILocale"
+                                jcr:primaryType="jnt:template">
+                        <bootstrapCustomization j:applyOn="jnt:virtualsite"
+                                       j:defaultTemplate="false"
+                                       j:hiddenTemplate="true"
+                                       j:icon="/modules/bootstrap/templates/files/bootstrap.png"
+                                       j:priority="100"
+                                       j:requiredPermissionNames="adminBootstrapCustomization"
+                                       j:titleKey="siteSettings.label.bootstrap"
+                                       jcr:mixinTypes="jmix:rbTitle"
+                                       jcr:primaryType="jnt:contentTemplate">
+                            <pagecontent jcr:primaryType="jnt:contentList">
+                                <editLessVariables formview="advanced" jcr:primaryType="jnt:editLessVariables"/>
+                            </pagecontent>
+                        </bootstrapCustomization>
+                    </site-settings-base>
+                </templates>
+                
                 <portlets jcr:primaryType="jnt:portletFolder"/>
                 <files jcr:primaryType="jnt:folder">
                     <bootstrap jcr:primaryType="jnt:folder">
@@ -30,31 +63,9 @@
                                 <jcr:content jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
                             </glyphicons-halflings.png>
                         </img>
-                    </bootstrap>
+            </bootstrap>
                 </files>
                 <contents jcr:primaryType="jnt:contentFolder"/>
-                <templates j:rootTemplatePath="/base" jcr:primaryType="jnt:templatesFolder">
-                    <files jcr:primaryType="jnt:folder"/>
-                    <contents jcr:primaryType="jnt:contentFolder"/>
-                    <site-settings-base j:view="siteSettings"
-                                jcr:mixinTypes="jmix:useUILocale"
-                                jcr:primaryType="jnt:template">
-                        <bootstrapCustomization j:applyOn="jnt:virtualsite"
-                                       j:defaultTemplate="false"
-                                       j:hiddenTemplate="true"
-                                       j:priority="100"
-                                       j:requiredPermissionNames="adminBootstrapCustomization"
-                                       j:titleKey="siteSettings.label.bootstrap"
-                                       jcr:mixinTypes="jmix:rbTitle"
-                                       jcr:primaryType="jnt:contentTemplate">
-                            <pagecontent jcr:primaryType="jnt:contentList">
-                                <editLessVariables formview="advanced" jcr:primaryType="jnt:editLessVariables"/>
-                            </pagecontent>
-                        </bootstrapCustomization>
-                    </site-settings-base>
-                </templates>
-                
-                
             </bootstrap>
     </modules>
 </content>
