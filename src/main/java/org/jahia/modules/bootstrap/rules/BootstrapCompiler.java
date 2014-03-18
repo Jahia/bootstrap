@@ -43,7 +43,6 @@ package org.jahia.modules.bootstrap.rules;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.drools.core.spi.KnowledgeHelper;
 import org.jahia.api.Constants;
 import org.jahia.data.templates.JahiaTemplatesPackage;
 import org.jahia.services.content.*;
@@ -91,9 +90,9 @@ public class BootstrapCompiler implements JahiaModuleAware {
                     try {
                         compileBootstrap(moduleVersion, Arrays.asList(lessResources), null);
                     } catch (IOException e) {
-                        new RepositoryException(e);
+                        throw new RepositoryException(e);
                     } catch (LessException e) {
-                        new RepositoryException(e);
+                        throw new RepositoryException(e);
                     }
                     return null;
                 }
