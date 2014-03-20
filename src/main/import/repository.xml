@@ -8,6 +8,33 @@
                  jcr:mixinTypes="jmix:hasExternalProviderExtension"
                  jcr:primaryType="jnt:module">
                 
+                <portlets jcr:primaryType="jnt:portletFolder"/>
+                <files jcr:primaryType="jnt:folder">
+                    <bootstrap jcr:primaryType="jnt:folder">
+                        <css jcr:primaryType="jnt:folder">
+                            <bootstrap.css jcr:primaryType="jnt:file">
+                                <jcr:content jcr:mimeType="text/css" jcr:primaryType="jnt:resource"/>
+                            </bootstrap.css>
+                        </css>
+                        <img jcr:primaryType="jnt:folder">
+                            <glyphicons-halflings-white.png j:height="159"
+                                                  j:width="469"
+                                                  jcr:mixinTypes="jmix:image"
+                                                  jcr:primaryType="jnt:file">
+                                <jcr:content jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
+                                <thumbnail jcr:mimeType="application/binary" jcr:primaryType="jnt:resource"/>
+                                <thumbnail2 jcr:mimeType="application/binary" jcr:primaryType="jnt:resource"/>
+                            </glyphicons-halflings-white.png>
+                            <glyphicons-halflings.png j:height="159"
+                                            j:width="469"
+                                            jcr:mixinTypes="jmix:image"
+                                            jcr:primaryType="jnt:file">
+                                <jcr:content jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
+                            </glyphicons-halflings.png>
+                        </img>
+                    </bootstrap>
+                </files>
+                <contents jcr:primaryType="jnt:contentFolder"/>
                 <templates j:rootTemplatePath="/base" jcr:primaryType="jnt:templatesFolder">
                     <files jcr:primaryType="jnt:folder">
                         <bootstrap.png j:height="16"
@@ -39,33 +66,6 @@
                     </site-settings-base>
                 </templates>
                 
-                <portlets jcr:primaryType="jnt:portletFolder"/>
-                <files jcr:primaryType="jnt:folder">
-                    <bootstrap jcr:primaryType="jnt:folder">
-                        <css jcr:primaryType="jnt:folder">
-                            <bootstrap.css jcr:primaryType="jnt:file">
-                                <jcr:content jcr:mimeType="text/css" jcr:primaryType="jnt:resource"/>
-                            </bootstrap.css>
-                        </css>
-                        <img jcr:primaryType="jnt:folder">
-                            <glyphicons-halflings-white.png j:height="159"
-                                                  j:width="469"
-                                                  jcr:mixinTypes="jmix:image"
-                                                  jcr:primaryType="jnt:file">
-                                <jcr:content jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
-                                <thumbnail jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
-                                <thumbnail2 jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
-                            </glyphicons-halflings-white.png>
-                            <glyphicons-halflings.png j:height="159"
-                                            j:width="469"
-                                            jcr:mixinTypes="jmix:image"
-                                            jcr:primaryType="jnt:file">
-                                <jcr:content jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
-                            </glyphicons-halflings.png>
-                        </img>
-            </bootstrap>
-                </files>
-                <contents jcr:primaryType="jnt:contentFolder"/>
             </bootstrap>
     </modules>
 </content>
