@@ -184,9 +184,14 @@ public class BootstrapCompiler implements JahiaModuleAware {
                         } else {
                             inputStream = lessResource.getInputStream();
                         }
-                        IOUtils.copy(inputStream, new FileOutputStream(lessFile));
+                        final FileOutputStream output = new FileOutputStream(lessFile);
+                        IOUtils.copy(inputStream, output);
+                        IOUtils.closeQuietly(inputStream);
+                        IOUtils.closeQuietly(output);
                     }
-                    allContent.addAll(IOUtils.readLines(new FileInputStream(lessFile)));
+                    final FileInputStream input = new FileInputStream(lessFile);
+                    allContent.addAll(IOUtils.readLines(input));
+                    IOUtils.closeQuietly(input);
                 }
                 String md5 = DigestUtils.md5Hex(StringUtils.join(allContent, '\n'));
 
@@ -221,6 +226,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
                     FileInputStream inputStream = new FileInputStream(bootstrapCss);
                     bootstrapCssNode.getFileContent().uploadFile(inputStream,"text/css");
                     bootstrapCssNode.getSession().save();
+                    IOUtils.closeQuietly(inputStream);
                 }
             } catch (IOException e) {
                 throw new RepositoryException(e);
