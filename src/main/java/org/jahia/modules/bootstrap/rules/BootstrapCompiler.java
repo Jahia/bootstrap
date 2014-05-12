@@ -69,6 +69,7 @@
  */
 package org.jahia.modules.bootstrap.rules;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -173,6 +174,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
             File tmpLessFolder = new File(FileUtils.getTempDirectory(), "less-" + System.currentTimeMillis());
             tmpLessFolder.mkdir();
             try {
+                List<String> allContent = new ArrayList<String>();
                 for (Resource lessResource : lessResources) {
                     File lessFile = new File(tmpLessFolder, lessResource.getFilename());
                     if (!lessFile.exists()) {
@@ -184,9 +186,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
                         }
                         IOUtils.copy(inputStream, new FileOutputStream(lessFile));
                     }
+                    allContent.addAll(IOUtils.readLines(new FileInputStream(lessFile)));
                 }
-                File bootstrapCss = new File(tmpLessFolder, BOOTSTRAP_CSS);
-                lessCompiler.compile(new File(tmpLessFolder, "bootstrap.less"), bootstrapCss);
+                String md5 = DigestUtils.md5Hex(StringUtils.join(allContent, '\n'));
+
                 JCRNodeWrapper node = siteOrModuleVersion;
                 for (String pathPart : StringUtils.split(CSS_FOLDER_PATH, '/')) {
                     if (node.hasNode(pathPart)) {
@@ -195,15 +198,26 @@ public class BootstrapCompiler implements JahiaModuleAware {
                         node = node.addNode(pathPart, "jnt:folder");
                     }
                 }
-                boolean uploadCss = true;
+
+                boolean compileCss = true;
                 JCRNodeWrapper bootstrapCssNode;
+
                 if (node.hasNode(BOOTSTRAP_CSS)) {
                     bootstrapCssNode = node.getNode(BOOTSTRAP_CSS);
-                    uploadCss = !IOUtils.contentEquals(bootstrapCssNode.getFileContent().downloadFile(), new FileInputStream(bootstrapCss));
+                    String content = bootstrapCssNode.getFileContent().getText();
+                    String timestamp = StringUtils.substringBetween(content,"/* sources hash "," */");
+                    if (timestamp != null && md5.equals(timestamp)) {
+                        compileCss = false;
+                    }
                 } else {
                     bootstrapCssNode = node.addNode(BOOTSTRAP_CSS, "jnt:file");
                 }
-                if (uploadCss) {
+                if (compileCss) {
+                    File bootstrapCss = new File(tmpLessFolder, BOOTSTRAP_CSS);
+                    lessCompiler.compile(new File(tmpLessFolder, "bootstrap.less"), bootstrapCss);
+                    FileOutputStream f = new FileOutputStream(bootstrapCss,true);
+                    IOUtils.write("\n/* sources hash "+ md5 + " */\n",f);
+                    IOUtils.closeQuietly(f);
                     FileInputStream inputStream = new FileInputStream(bootstrapCss);
                     bootstrapCssNode.getFileContent().uploadFile(inputStream,"text/css");
                     bootstrapCssNode.getSession().save();
