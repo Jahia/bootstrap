@@ -120,6 +120,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
         if (module == null) {
             return;
         }
+        long timer = System.currentTimeMillis();
         try {
             JCRTemplate.getInstance().doExecuteWithSystemSession(new JCRCallback<Object>() {
                 public Object doInJCR(JCRSessionWrapper session) throws RepositoryException {
@@ -138,7 +139,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
         } catch (RepositoryException e) {
             log.error("Failed to compile bootstrap.css", e);
         }
-
+        log.info("Bootstrap initialization completed in {} ms", System.currentTimeMillis() - timer);
     }
 
     public void compile(final JahiaTemplatesPackage templateSet) throws RepositoryException {
