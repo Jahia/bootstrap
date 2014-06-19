@@ -26,15 +26,3 @@ rule "Set bootstrap folder ACL and publish it"
     Grant role privileged on the node to the group privileged
     Publish subtree rooted at that node
 end
-
-rule "Compile templatesSet bootstrap.css"
-  when
-    A property j:deployementDate has been set on a node
-      - the node has the type jnt:versionInfo
-    The node has a parent
-     - the parent has the type jnt:moduleVersion
-    The property j:moduleType has the value "templatesSet" on the parent
-    The property j:dependencies contains the value "bootstrap" on the parent
-  then
-    Compile bootstrap.css for the parent
-end

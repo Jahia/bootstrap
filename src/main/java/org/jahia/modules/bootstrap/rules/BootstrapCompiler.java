@@ -82,7 +82,6 @@ import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.content.rules.AddedNodeFact;
 import org.jahia.services.templates.JahiaModuleAware;
 import org.jahia.services.templates.JahiaTemplateManagerService;
-import org.jahia.services.templates.ModuleVersion;
 import org.jahia.services.templates.TemplatePackageRegistry;
 import org.lesscss.LessCompiler;
 import org.lesscss.LessException;
@@ -135,22 +134,27 @@ public class BootstrapCompiler implements JahiaModuleAware {
 
     }
 
-    public void compile(AddedNodeFact nodeFact)
-            throws RepositoryException, IOException, LessException {
-        if (module == null) {
-            return;
-        }
-        JCRNodeWrapper moduleVersion = nodeFact.getNode();
-        String templatesSetName = moduleVersion.getParent().getName();
-        JahiaTemplatesPackage templatesSet = jahiaTemplateManagerService.getTemplatePackageRegistry().lookupByIdAndVersion(templatesSetName, new ModuleVersion(moduleVersion.getName()));
-        Resource[] templatesSetLessResources = templatesSet.getResources(LESS_RESOURCES_FOLDER);
-        // no need to compile bootstrap.css if the templatesSet doesn't contain any less files
-        if (templatesSetLessResources.length == 0) {
-            return;
-        }
-        ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(templatesSetLessResources));
-        lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
-        compileBootstrap(moduleVersion, lessResources, null);
+    public void compile(final JahiaTemplatesPackage templateSet) throws RepositoryException {
+        JCRTemplate.getInstance().doExecuteWithSystemSession(new JCRCallback<Object>() {
+            @Override
+            public Object doInJCR(JCRSessionWrapper session) throws RepositoryException {
+                Resource[] templatesSetLessResources = templateSet.getResources(LESS_RESOURCES_FOLDER);
+                if (templatesSetLessResources.length == 0) {
+                    // no need to compile bootstrap.css if the templatesSet doesn't contain any less files
+                    return null;
+                }
+                ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(templatesSetLessResources));
+                lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
+                try {
+                    compileBootstrap(session.getNode(templateSet.getRootFolderPath() + "/" + templateSet.getVersion().toString()), lessResources, null);
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                } catch (LessException e) {
+                    log.error(e.getMessage(), e);
+                }
+                return null;
+            }
+        });
     }
 
     public void compileBootstrapWithVariables(JCRSiteNode site, String variables) throws RepositoryException, IOException, LessException {
