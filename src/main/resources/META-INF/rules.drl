@@ -20,9 +20,5 @@ rule "Set bootstrap folder ACL and publish it"
       - the node has the type jnt:folder
       - its path matches /sites/[\\p{Alnum}\\-_]+/files/bootstrap
   then
-    Break all ACL inheritance on the node
-    Grant role reader on the node to the group users
-    Grant role reader on the node to the user guest
-    Grant role privileged on the node to the group privileged
     Publish subtree rooted at that node
 end
