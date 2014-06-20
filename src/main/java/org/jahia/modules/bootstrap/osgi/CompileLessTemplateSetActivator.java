@@ -136,8 +136,12 @@ public class CompileLessTemplateSetActivator implements BundleActivator {
                     }
 
                     String version = bundleEvent.getBundle().getHeaders().get("Implementation-Version");
+                    if(version == null) {
+                        return;
+                    }
+
                     JahiaTemplatesPackage jahiaTemplatesPackage = jahiaTemplateManagerService.getTemplatePackageRegistry().lookupByIdAndVersion(bundleEvent.getBundle().getSymbolicName(), new ModuleVersion(version));
-                    if(jahiaTemplatesPackage == null) {
+                    if(jahiaTemplatesPackage == null){
                         return;
                     }
 
