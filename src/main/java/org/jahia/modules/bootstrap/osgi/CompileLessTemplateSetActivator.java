@@ -73,6 +73,7 @@ package org.jahia.modules.bootstrap.osgi;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import org.apache.commons.lang.StringUtils;
 import org.jahia.data.templates.JahiaTemplatesPackage;
 import org.jahia.modules.bootstrap.rules.BootstrapCompiler;
 import org.jahia.registries.ServicesRegistry;
@@ -88,6 +89,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.jcr.RepositoryException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Activator for modules data provider.
@@ -116,16 +120,14 @@ public class CompileLessTemplateSetActivator implements BundleActivator {
         }
 
         context.addBundleListener(new SynchronousBundleListener() {
-            private Function<JahiaTemplatesPackage, String> transformPackageToIds = new Function<JahiaTemplatesPackage, String>() {
-                @Nullable
-                @Override
-                public String apply(@Nullable JahiaTemplatesPackage input) {
-                    if (input != null){
-                        return input.getId();
-                    }
-                    return null;
+            private List<String> getDependenciesIds(JahiaTemplatesPackage jahiaTemplatesPackage) {
+                String depends = jahiaTemplatesPackage.getBundle().getHeaders().get("Jahia-Depends");
+                ArrayList<String> l = new ArrayList<String>();
+                for (String dep : StringUtils.split(depends, ",")) {
+                    l.add(dep.trim());
                 }
-            };
+                return l;
+            }
 
             @Override
             public void bundleChanged(BundleEvent bundleEvent) {
@@ -146,7 +148,7 @@ public class CompileLessTemplateSetActivator implements BundleActivator {
                     }
 
                     if(jahiaTemplatesPackage.getModuleType().equals(JahiaTemplateManagerService.MODULE_TYPE_TEMPLATES_SET) &&
-                            Collections2.transform(jahiaTemplatesPackage.getDependencies(), transformPackageToIds).contains("bootstrap")){
+                            getDependenciesIds(jahiaTemplatesPackage).contains("bootstrap")){
                         BootstrapCompiler bootstrapCompiler = (BootstrapCompiler) SpringContextSingleton.getBean("BootstrapCompiler");
                         if(bootstrapCompiler != null){
                             try {

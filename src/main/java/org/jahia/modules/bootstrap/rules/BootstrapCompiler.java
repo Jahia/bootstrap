@@ -77,6 +77,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jahia.api.Constants;
 import org.jahia.data.templates.JahiaTemplatesPackage;
+import org.jahia.modules.bootstrap.actions.CustomizeBootstrapAction;
 import org.jahia.services.content.*;
 import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.content.rules.AddedNodeFact;
@@ -89,7 +90,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 
+import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
+import javax.jcr.query.QueryResult;
 import java.io.*;
 import java.util.*;
 
@@ -140,21 +147,57 @@ public class BootstrapCompiler implements JahiaModuleAware {
             public Object doInJCR(JCRSessionWrapper session) throws RepositoryException {
                 Resource[] templatesSetLessResources = templateSet.getResources(LESS_RESOURCES_FOLDER);
                 if (templatesSetLessResources.length == 0) {
-                    // no need to compile bootstrap.css if the templatesSet doesn't contain any less files
-                    return null;
+                    // no need to compile bootstrap.css if the templatesSet doesn't contain any less files, just copy it from bootstrap module
+                    copyBootstrapCSS(module.getRootFolderPath() + "/" + module.getVersion().toString() + "/" + CSS_FOLDER_PATH + "/" + BOOTSTRAP_CSS,
+                            session.getNode(templateSet.getRootFolderPath() + "/" + templateSet.getVersion().toString()),
+                            session);
+                } else {
+                    ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(templatesSetLessResources));
+                    lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
+                    try {
+                        compileBootstrap(session.getNode(templateSet.getRootFolderPath() + "/" + templateSet.getVersion().toString()), lessResources, null);
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    } catch (LessException e) {
+                        log.error(e.getMessage(), e);
+                    }
                 }
-                ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(templatesSetLessResources));
-                lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
-                try {
-                    compileBootstrap(session.getNode(templateSet.getRootFolderPath() + "/" + templateSet.getVersion().toString()), lessResources, null);
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                } catch (LessException e) {
-                    log.error(e.getMessage(), e);
+
+                // copy on all sites using this templateSet, that don't have any custom variables
+                QueryManager qm = session.getWorkspace().getQueryManager();
+                QueryResult result = qm.createQuery("SELECT * FROM [jnt:virtualsite] WHERE [j:templatesSet] = '" + templateSet.getId() + "'", Query.JCR_SQL2).execute();
+                NodeIterator sites = result.getNodes();
+                while (sites.hasNext()) {
+                    JCRSiteNode site = (JCRSiteNode) sites.nextNode();
+                    if (!site.getAllInstalledModules().contains("bootstrap") || !site.hasNode(CustomizeBootstrapAction.BOOTSTRAP_VARIABLES)) {
+                        copyBootstrapCSS(templateSet.getRootFolderPath() + "/" + templateSet.getVersion().toString() + "/" + CSS_FOLDER_PATH + "/" + BOOTSTRAP_CSS,
+                                site, session);
+                    }
+                }
+                if (sites.getSize() > 0) {
+                    session.save();
                 }
                 return null;
             }
         });
+    }
+
+    private void copyBootstrapCSS(String srcCssPath, JCRNodeWrapper siteOrModuleVersion, JCRSessionWrapper session) throws RepositoryException {
+        if (session.itemExists(srcCssPath)) {
+            JCRNodeWrapper dstCss = siteOrModuleVersion;
+            for (String pathPart : StringUtils.split(CSS_FOLDER_PATH, '/')) {
+                if (dstCss.hasNode(pathPart)) {
+                    dstCss = dstCss.getNode(pathPart);
+                } else {
+                    dstCss = dstCss.addNode(pathPart, "jnt:folder");
+                }
+            }
+            if (dstCss.hasNode(BOOTSTRAP_CSS)) {
+                dstCss.getNode(BOOTSTRAP_CSS).remove();
+            }
+            session.getNode(srcCssPath).copy(dstCss.getPath());
+            session.save();
+        }
     }
 
     public void compileBootstrapWithVariables(JCRSiteNode site, String variables) throws RepositoryException, IOException, LessException {
