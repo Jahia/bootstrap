@@ -86,6 +86,7 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.SynchronousBundleListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import javax.annotation.Nullable;
 import javax.jcr.RepositoryException;
@@ -149,8 +150,13 @@ public class CompileLessTemplateSetActivator implements BundleActivator {
 
                     if(jahiaTemplatesPackage.getModuleType().equals(JahiaTemplateManagerService.MODULE_TYPE_TEMPLATES_SET) &&
                             getDependenciesIds(jahiaTemplatesPackage).contains("bootstrap")){
-                        BootstrapCompiler bootstrapCompiler = (BootstrapCompiler) SpringContextSingleton.getBean("BootstrapCompiler");
-                        if(bootstrapCompiler != null){
+                        BootstrapCompiler bootstrapCompiler = null;
+                        try {
+                            bootstrapCompiler = (BootstrapCompiler) SpringContextSingleton.getBean("BootstrapCompiler");
+                        } catch (NoSuchBeanDefinitionException e) {
+                            log.debug("Failed to find BootstrapCompiler", e);
+                        }
+                        if (bootstrapCompiler != null) {
                             try {
                                 bootstrapCompiler.compile(jahiaTemplatesPackage);
                             } catch (RepositoryException e) {
