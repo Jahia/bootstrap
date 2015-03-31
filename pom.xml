@@ -88,7 +88,7 @@
   <scm>
     <connection>scm:git:git://github.com/Jahia/bootstrap.git</connection>
     <developerConnection>scm:git:git@github.com:Jahia/bootstrap.git</developerConnection>
-    <url>https://github.com/Jahia/bootstrap</url>
+    <url>scm:git:git@github.com:Jahia/bootstrap</url>
   </scm>
   <dependencies>
     <dependency>
