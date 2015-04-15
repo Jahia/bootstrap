@@ -116,8 +116,7 @@ public class AddBootstrapThemeJavascriptTag extends AbstractJahiaTag {
                             JCRNodeWrapper next = (JCRNodeWrapper) nodes.next();
                             if(next.isNodeType("nt:file")) {
                                 String path = renderContext.getURLGenerator().getFiles() + next.getPath();
-                                String tag = String.format("<jahia:resource type=\"javascript\" path=\"%s\" resource=\"%s\" title=\"\" key=\"\" />\n",
-                                        path, next.getName());
+                                String tag = "<jahia:resource type=\"javascript\" path=\"" + path + "\" resource=\"" + next.getName() + "\" title=\"\" key=\"\" />\n";
                                 pageContext.getOut().print(tag);
                             }
                         }

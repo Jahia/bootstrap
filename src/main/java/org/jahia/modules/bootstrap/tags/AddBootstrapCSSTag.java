@@ -86,7 +86,6 @@ import javax.servlet.jsp.JspException;
 import java.util.List;
 
 public class AddBootstrapCSSTag extends AbstractJahiaTag {
-    private static final transient Logger logger = org.slf4j.LoggerFactory.getLogger(AddBootstrapCSSTag.class);
     public static final String CSS_NAME = "bootstrap.css";
     public static final String CSS_PATH = "/files/bootstrap/css/" + CSS_NAME;
 
@@ -110,8 +109,7 @@ public class AddBootstrapCSSTag extends AbstractJahiaTag {
             }
             URLGenerator urlGenerator = renderContext.getURLGenerator();
             String path = urlGenerator.getContext() + urlGenerator.getFiles() + basePath + CSS_PATH;
-            String tag = String.format("<jahia:resource type=\"css\" path=\"%s\" insert=\"true\" resource=\"%s\" title=\"\" key=\"\" />\n",
-                    path, CSS_NAME);
+            String tag = "<jahia:resource type=\"css\" path=\"" + path + "\" insert=\"true\" resource=\"" + CSS_NAME + "\" title=\"\" key=\"\" />\n";
             pageContext.getOut().print(tag);
         } catch (Exception e) {
             throw new JspException("Failed to write jahia:resource tag for bootstrap", e);
