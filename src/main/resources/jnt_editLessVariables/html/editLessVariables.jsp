@@ -25,10 +25,10 @@
 <c:if test="${formview ne 'advanced'}">
     <c:set var="switchFormUrl" value="${url.base}${renderContext.mainResource.node.path}.${renderContext.mainResource.template}.html"/>
     <c:if test="${empty param.formview}">
-        <a class="btn btn-small pull-right" href="<c:url value='${switchFormUrl}?formview=advanced'/>"><i class="icon-resize-full"></i> <fmt:message key="siteSettings.label.bootstrap.form.advanced"/></a>
+        <a class="btn btn-sm pull-right" href="<c:url value='${switchFormUrl}?formview=advanced'/>"><i class="glyphicon-resize-full"></i> <fmt:message key="siteSettings.label.bootstrap.form.advanced"/></a>
     </c:if>
     <c:if test="${not empty param.formview}">
-        <a class="btn btn-small pull-right" href="<c:url value='${switchFormUrl}'/>"><i class="icon-resize-small"></i> <fmt:message key="siteSettings.label.bootstrap.form.simple"/></a>
+        <a class="btn btn-sm pull-right" href="<c:url value='${switchFormUrl}'/>"><i class="glyphicon-resize-small"></i> <fmt:message key="siteSettings.label.bootstrap.form.simple"/></a>
     </c:if>
 </c:if>
 
@@ -50,16 +50,16 @@
     <input type="hidden" name="jcrNewNodeOutputFormat"
            value="<c:url value='${renderContext.mainResource.template}.html'/>">
     <button class="btn btn-primary" type="submit">
-        <i class="icon-ok icon-white"></i> <fmt:message key='siteSettings.bootstrap.saveAndCompile'/>
+        <i class="glyphicon-ok glyphicon-white"></i> <fmt:message key='siteSettings.bootstrap.saveAndCompile'/>
     </button>
     <button class="btn btn-danger" type="button" onclick="if (confirm('${resetConfirm}')) {$('#resetVariables${renderContext.mainResource.node.identifier}').submit()}">
-        <i class="icon-refresh icon-white"></i> <fmt:message key='siteSettings.bootstrap.reset'/>
+        <i class="glyphicon-refresh glyphicon-white"></i> <fmt:message key='siteSettings.bootstrap.reset'/>
     </button>
     <jcr:node path="${renderContext.site.path}/files/bootstrap" var="bootstrapFolder"/>
     <c:set var="needPublication" value="${jcr:needPublication(bootstrapFolder, null, false, true, true)}"/>
     <button class="btn${needPublication ? '' : ' disabled'}" type="button" name="publish"
             <c:if test="${needPublication}">onclick="$('#publishBootstrap${renderContext.mainResource.node.identifier}').submit()"</c:if>>
-        <i class="icon-globe"></i> <fmt:message key='siteSettings.bootstrap.publishCSS'/>
+        <i class="glyphicon-globe"></i> <fmt:message key='siteSettings.bootstrap.publishCSS'/>
     </button>
 </form>
 

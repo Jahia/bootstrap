@@ -82,16 +82,16 @@ if (variables != null) {
                 if (matcher.matches()) {
                     println '<label><div class="row-fluid">'
                     def variableName = matcher[0][1]
-                    println '<div class="span3">' + variableName + '</div>'
+                    println '<div class="col-md-3">' + variableName + '</div>'
                     def value
                     if (variablesNode != null && variablesNode.hasProperty(variableName)) {
                         value = variablesNode.getProperty(variableName).getString()
                     } else {
                         value = matcher[0][2]
                     }
-                    println '<div class="span6"><input type="text" name="' + variableName + '" value="' + value.replace('"', '&quot;') + '" class="span12" /></div>'
+                    println '<div class="col-md-6"><input type="text" name="' + variableName + '" value="' + value.replace('"', '&quot;') + '" class="col-md-12" /></div>'
                     if (matcher[0][3] != null) {
-                        println '<div class="span3"><span class="help-inline">' + matcher[0][3] + '</span></div>'
+                        println '<div class="col-md-3"><span class="help-block">' + matcher[0][3] + '</span></div>'
                     }
                     println '</div></label>'
                 }
