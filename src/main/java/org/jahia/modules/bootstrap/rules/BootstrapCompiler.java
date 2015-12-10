@@ -155,6 +155,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
                 } else {
                     ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(templatesSetLessResources));
                     lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
+                    lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER+"/mixins")));
                     try {
                         compileBootstrap(session.getNode(templateSet.getRootFolderPath() + "/" + templateSet.getVersion().toString()), lessResources, null);
                     } catch (IOException e) {
@@ -214,8 +215,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
         ArrayList<Resource> lessResources = new ArrayList<Resource>();
         for (JahiaTemplatesPackage aPackage : packages) {
             lessResources.addAll(Arrays.asList(aPackage.getResources(LESS_RESOURCES_FOLDER)));
+            lessResources.addAll(Arrays.asList(aPackage.getResources(LESS_RESOURCES_FOLDER+"/mixins")));
         }
         lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
+        lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER+"/mixins")));
         compileBootstrap(site, lessResources, variables);
     }
 
