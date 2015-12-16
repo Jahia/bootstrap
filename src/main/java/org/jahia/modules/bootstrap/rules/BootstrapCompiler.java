@@ -125,9 +125,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
             JCRTemplate.getInstance().doExecuteWithSystemSession(new JCRCallback<Object>() {
                 public Object doInJCR(JCRSessionWrapper session) throws RepositoryException {
                     JCRNodeWrapper moduleVersion = session.getNode("/modules/" + module.getIdWithVersion());
-                    Resource[] lessResources = module.getResources(LESS_RESOURCES_FOLDER);
+                    ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
+                    lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER+"/mixins")));
                     try {
-                        compileBootstrap(moduleVersion, Arrays.asList(lessResources), null);
+                        compileBootstrap(moduleVersion, lessResources, null);
                     } catch (IOException e) {
                         throw new RepositoryException(e);
                     } catch (LessException e) {
@@ -226,25 +227,28 @@ public class BootstrapCompiler implements JahiaModuleAware {
         if (lessResources != null && !lessResources.isEmpty()) {
             File tmpLessFolder = new File(FileUtils.getTempDirectory(), "less-" + System.currentTimeMillis());
             tmpLessFolder.mkdir();
+            new File(tmpLessFolder.getAbsolutePath()+"/mixins").mkdir();
             try {
                 List<String> allContent = new ArrayList<String>();
                 for (Resource lessResource : lessResources) {
-                    File lessFile = new File(tmpLessFolder, lessResource.getFilename());
-                    if (!lessFile.exists()) {
-                        InputStream inputStream;
-                        if (variables != null && VARIABLES_LESS.equals(lessResource.getFilename())) {
-                            inputStream = new SequenceInputStream(lessResource.getInputStream(), new ByteArrayInputStream(variables.getBytes()));
-                        } else {
-                            inputStream = lessResource.getInputStream();
+                    if (!lessResource.getFilename().endsWith("mixins")) {
+                        File lessFile = new File(tmpLessFolder+(lessResource.getURI().toString().endsWith("mixins/"+lessResource.getFilename())?"/mixins":""), lessResource.getFilename());
+                        if (!lessFile.exists()) {
+                            InputStream inputStream;
+                            if (variables != null && VARIABLES_LESS.equals(lessResource.getFilename())) {
+                                inputStream = new SequenceInputStream(lessResource.getInputStream(), new ByteArrayInputStream(variables.getBytes()));
+                            } else {
+                                inputStream = lessResource.getInputStream();
+                            }
+                            final FileOutputStream output = new FileOutputStream(lessFile);
+                            IOUtils.copy(inputStream, output);
+                            IOUtils.closeQuietly(inputStream);
+                            IOUtils.closeQuietly(output);
                         }
-                        final FileOutputStream output = new FileOutputStream(lessFile);
-                        IOUtils.copy(inputStream, output);
-                        IOUtils.closeQuietly(inputStream);
-                        IOUtils.closeQuietly(output);
+                        final FileInputStream input = new FileInputStream(lessFile);
+                        allContent.addAll(IOUtils.readLines(input));
+                        IOUtils.closeQuietly(input);
                     }
-                    final FileInputStream input = new FileInputStream(lessFile);
-                    allContent.addAll(IOUtils.readLines(input));
-                    IOUtils.closeQuietly(input);
                 }
                 String md5 = DigestUtils.md5Hex(StringUtils.join(allContent, '\n'));
 
