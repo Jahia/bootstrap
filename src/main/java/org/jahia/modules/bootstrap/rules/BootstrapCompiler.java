@@ -102,10 +102,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
 
     private static final Logger log = LoggerFactory.getLogger(BootstrapCompiler.class);
 
-    private static String CSS_FOLDER_PATH = "files/bootstrap/css";
-    private static String BOOTSTRAP_CSS = "bootstrap.css";
+    private static final String CSS_FOLDER_PATH = "files/bootstrap/css";
+    private static final String BOOTSTRAP_CSS = "bootstrap.css";
 
-    private String defaultLessRessoucesfolder;
+    public static String defaultLessRessoucesfolder;
 
     private LessCompiler lessCompiler;
     private JahiaTemplateManagerService jahiaTemplateManagerService;

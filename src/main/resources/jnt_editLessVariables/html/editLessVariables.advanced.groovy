@@ -1,6 +1,7 @@
 import org.apache.commons.io.IOUtils
 import org.jahia.data.templates.JahiaTemplatesPackage
 import org.jahia.modules.bootstrap.actions.CustomizeBootstrapAction
+import org.jahia.modules.bootstrap.rules.BootstrapCompiler
 import org.jahia.registries.ServicesRegistry
 import org.jahia.services.content.JCRNodeWrapper
 import org.jahia.services.content.decorator.JCRSiteNode
@@ -8,8 +9,8 @@ import org.jahia.services.templates.JahiaTemplateManagerService
 import org.jahia.services.templates.TemplatePackageRegistry
 import org.springframework.core.io.Resource
 
-def getVariables(JahiaTemplatesPackage aPackage) {
-    Resource r = aPackage.getResource("less/variables.less")
+def getVariables(JahiaTemplatesPackage aPackage, String resource) {
+    Resource r = aPackage.getResource(resource)
     if (r != null && r.exists()) {
         StringWriter writer = new StringWriter();
         IOUtils.copy(r.getInputStream(), writer);
@@ -24,18 +25,22 @@ Set<JahiaTemplatesPackage> packages = new TreeSet<JahiaTemplatesPackage>(Templat
 for (String s : site.getInstalledModulesWithAllDependencies()) {
     packages.add(jahiaTemplateManagerService.getTemplatePackageById(s));
 }
+
 JahiaTemplatesPackage bootstrapModule = jahiaTemplateManagerService.getTemplatePackageById("bootstrap")
 packages.remove(bootstrapModule);
 def variables
 for (JahiaTemplatesPackage aPackage : packages) {
-    variables = getVariables(aPackage)
+    variables = getVariables(aPackage,"less/variables.less")
     if (variables != null) {
         break;
     }
 }
+
 if (variables == null) {
     if (bootstrapModule != null) {
-        variables = getVariables(bootstrapModule)
+        JCRNodeWrapper templatesSetNode = site.session.getNode("/modules/" + site.getTemplatePackage().getIdWithVersion());
+        String lessRessoucesfolder = templatesSetNode.hasNode("templates") && templatesSetNode.getNode("templates").hasProperty("bootstrapVersion")?templatesSetNode.getNode("templates").getPropertyAsString("bootstrapVersion"):BootstrapCompiler.defaultLessRessoucesfolder;
+        variables = getVariables(bootstrapModule, lessRessoucesfolder + "/variables.less")
     }
 }
 
@@ -82,16 +87,16 @@ if (variables != null) {
                 if (matcher.matches()) {
                     println '<label><div class="row-fluid">'
                     def variableName = matcher[0][1]
-                    println '<div class="col-md-3">' + variableName + '</div>'
+                    println '<div class="span3">' + variableName + '</div>'
                     def value
                     if (variablesNode != null && variablesNode.hasProperty(variableName)) {
                         value = variablesNode.getProperty(variableName).getString()
                     } else {
                         value = matcher[0][2]
                     }
-                    println '<div class="col-md-6"><input type="text" name="' + variableName + '" value="' + value.replace('"', '&quot;') + '" class="col-md-12" /></div>'
+                    println '<div class="span6"><input type="text" name="' + variableName + '" value="' + value.replace('"', '&quot;') + '" class="span12" /></div>'
                     if (matcher[0][3] != null) {
-                        println '<div class="col-md-3"><span class="help-block">' + matcher[0][3] + '</span></div>'
+                        println '<div class="span3"><span class="help-inline">' + matcher[0][3] + '</span></div>'
                     }
                     println '</div></label>'
                 }
