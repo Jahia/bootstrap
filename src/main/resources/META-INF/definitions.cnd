@@ -6,3 +6,7 @@
 
 [jnt:lessVariables] > nt:base
  - * (string)
+
+[jmix:bootstrapVersion] mixin
+ extends = jnt:templatesFolder
+ - bootstrapVersion (string, choicelist) = less2 < less2,less3

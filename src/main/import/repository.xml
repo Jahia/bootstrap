@@ -32,6 +32,26 @@
                                 <jcr:content jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
                             </glyphicons-halflings.png>
                         </img>
+                        <fonts jcr:primaryType="jnt:folder">
+                            <glyphicons-halflings-regular.svg jcr:mixinTypes="jmix:image" jcr:primaryType="jnt:file">
+                                <jcr:content j:lastExtractionDate="2015-12-29T23:22:10.081+01:00"
+                                  jcr:mimeType="image/svg+xml"
+                                  jcr:primaryType="jnt:resource"/>
+                            </glyphicons-halflings-regular.svg>
+                            <glyphicons-halflings-regular.ttf jcr:primaryType="jnt:file">
+                                <jcr:content jcr:mimeType="application/x-font-ttf" jcr:primaryType="jnt:resource"/>
+                            </glyphicons-halflings-regular.ttf>
+                            <glyphicons-halflings-regular.eot jcr:primaryType="jnt:file">
+                                <jcr:content jcr:mimeType="application/vnd.ms-fontobject"
+                                  jcr:primaryType="jnt:resource"/>
+                            </glyphicons-halflings-regular.eot>
+                            <glyphicons-halflings-regular.woff2 jcr:primaryType="jnt:file">
+                                <jcr:content jcr:mimeType="application/binary" jcr:primaryType="jnt:resource"/>
+                            </glyphicons-halflings-regular.woff2>
+                            <glyphicons-halflings-regular.woff jcr:primaryType="jnt:file">
+                                <jcr:content jcr:mimeType="application/x-font-woff" jcr:primaryType="jnt:resource"/>
+                            </glyphicons-halflings-regular.woff>
+                        </fonts>
                     </bootstrap>
                 </files>
                 <contents jcr:primaryType="jnt:contentFolder"/>

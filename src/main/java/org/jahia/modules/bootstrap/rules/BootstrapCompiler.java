@@ -91,8 +91,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 
 import javax.jcr.NodeIterator;
-import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
@@ -104,11 +102,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
 
     private static final Logger log = LoggerFactory.getLogger(BootstrapCompiler.class);
 
-    public static final String CSS_FOLDER_PATH = "files/bootstrap/css";
-    public static final String BOOTSTRAP_CSS = "bootstrap.css";
-    public static final String BOOTSTRAP_CSS_IMPORT_PATH = "src/main/import/content/modules/%s/" + CSS_FOLDER_PATH + "/" + BOOTSTRAP_CSS;
-    public static final String LESS_RESOURCES_FOLDER = "less";
-    public static final String VARIABLES_LESS = "variables.less";
+    private static String CSS_FOLDER_PATH = "files/bootstrap/css";
+    private static String BOOTSTRAP_CSS = "bootstrap.css";
+
+    private String defaultLessRessoucesfolder;
 
     private LessCompiler lessCompiler;
     private JahiaTemplateManagerService jahiaTemplateManagerService;
@@ -124,9 +121,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
         try {
             JCRTemplate.getInstance().doExecuteWithSystemSession(new JCRCallback<Object>() {
                 public Object doInJCR(JCRSessionWrapper session) throws RepositoryException {
+
                     JCRNodeWrapper moduleVersion = session.getNode("/modules/" + module.getIdWithVersion());
-                    ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
-                    lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER+"/mixins")));
+                    ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(module.getResources(defaultLessRessoucesfolder)));
+                    lessResources.addAll(Arrays.asList(module.getResources(defaultLessRessoucesfolder + "/mixins")));
                     try {
                         compileBootstrap(moduleVersion, lessResources, null);
                     } catch (IOException e) {
@@ -143,37 +141,34 @@ public class BootstrapCompiler implements JahiaModuleAware {
         log.info("Bootstrap initialization completed in {} ms", System.currentTimeMillis() - timer);
     }
 
-    public void compile(final JahiaTemplatesPackage templateSet) throws RepositoryException {
-        JCRTemplate.getInstance().doExecuteWithSystemSession(new JCRCallback<Object>() {
+    public void compile(final JahiaTemplatesPackage templatesSet) throws RepositoryException {
+
+            JCRTemplate.getInstance().doExecuteWithSystemSession(new JCRCallback<Object>() {
             @Override
             public Object doInJCR(JCRSessionWrapper session) throws RepositoryException {
-                Resource[] templatesSetLessResources = templateSet.getResources(LESS_RESOURCES_FOLDER);
-                if (templatesSetLessResources.length == 0) {
-                    // no need to compile bootstrap.css if the templatesSet doesn't contain any less files, just copy it from bootstrap module
-                    copyBootstrapCSS(module.getRootFolderPath() + "/" + module.getVersion().toString() + "/" + CSS_FOLDER_PATH + "/" + BOOTSTRAP_CSS,
-                            session.getNode(templateSet.getRootFolderPath() + "/" + templateSet.getVersion().toString()),
-                            session);
-                } else {
-                    ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(templatesSetLessResources));
-                    lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
-                    lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER+"/mixins")));
-                    try {
-                        compileBootstrap(session.getNode(templateSet.getRootFolderPath() + "/" + templateSet.getVersion().toString()), lessResources, null);
-                    } catch (IOException e) {
-                        log.error(e.getMessage(), e);
-                    } catch (LessException e) {
-                        log.error(e.getMessage(), e);
-                    }
+                JCRNodeWrapper templatesSetNode = session.getNode("/modules/" + templatesSet.getIdWithVersion());
+                ArrayList<Resource> lessResources = new ArrayList<>();
+                for (JahiaTemplatesPackage aPackage : templatesSet.getDependencies()) {
+                    lessResources.addAll(Arrays.asList(aPackage.getResources("/less")));
+                    lessResources.addAll(Arrays.asList(aPackage.getResources("/less/mixins")));
                 }
 
+                String lessRessoucesfolder = templatesSetNode.hasNode("templates") && templatesSetNode.getNode("templates").hasProperty("bootstrapVersion")?templatesSetNode.getNode("templates").getPropertyAsString("bootstrapVersion"):defaultLessRessoucesfolder;
+                lessResources.addAll(Arrays.asList(module.getResources(lessRessoucesfolder)));
+                lessResources.addAll(Arrays.asList(module.getResources(lessRessoucesfolder+"/mixins")));
+                try {
+                    compileBootstrap(templatesSetNode, lessResources, null);
+                } catch (IOException | LessException e) {
+                    log.error(e.getMessage(), e);
+                }
                 // copy on all sites using this templateSet, that don't have any custom variables
                 QueryManager qm = session.getWorkspace().getQueryManager();
-                QueryResult result = qm.createQuery("SELECT * FROM [jnt:virtualsite] WHERE [j:templatesSet] = '" + templateSet.getId() + "'", Query.JCR_SQL2).execute();
+                QueryResult result = qm.createQuery("SELECT * FROM [jnt:virtualsite] WHERE [j:templatesSet] = '" + templatesSet.getId() + "'", Query.JCR_SQL2).execute();
                 NodeIterator sites = result.getNodes();
                 while (sites.hasNext()) {
                     JCRSiteNode site = (JCRSiteNode) sites.nextNode();
                     if (!site.getAllInstalledModules().contains("bootstrap") || !site.hasNode(CustomizeBootstrapAction.BOOTSTRAP_VARIABLES)) {
-                        copyBootstrapCSS(templateSet.getRootFolderPath() + "/" + templateSet.getVersion().toString() + "/" + CSS_FOLDER_PATH + "/" + BOOTSTRAP_CSS,
+                        copyBootstrapCSS(templatesSet.getRootFolderPath() + "/" + templatesSet.getVersion().toString() + "/" + CSS_FOLDER_PATH + "/" + BOOTSTRAP_CSS,
                                 site, session);
                     }
                 }
@@ -215,11 +210,16 @@ public class BootstrapCompiler implements JahiaModuleAware {
         packages.remove(module);
         ArrayList<Resource> lessResources = new ArrayList<Resource>();
         for (JahiaTemplatesPackage aPackage : packages) {
-            lessResources.addAll(Arrays.asList(aPackage.getResources(LESS_RESOURCES_FOLDER)));
-            lessResources.addAll(Arrays.asList(aPackage.getResources(LESS_RESOURCES_FOLDER+"/mixins")));
+            lessResources.addAll(Arrays.asList(aPackage.getResources("/less")));
+            lessResources.addAll(Arrays.asList(aPackage.getResources("/less/mixins")));
         }
-        lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER)));
-        lessResources.addAll(Arrays.asList(module.getResources(LESS_RESOURCES_FOLDER+"/mixins")));
+        JCRNodeWrapper templatesSetNode = site.getSession().getNode("/modules/" + site.getTemplatePackage().getIdWithVersion());
+
+        // Add default
+
+        String lessRessoucesfolder = templatesSetNode.hasNode("templates") && templatesSetNode.getNode("templates").hasProperty("bootstrapVersion")?templatesSetNode.getNode("templates").getPropertyAsString("bootstrapVersion"):defaultLessRessoucesfolder;
+        lessResources.addAll(Arrays.asList(module.getResources(lessRessoucesfolder)));
+        lessResources.addAll(Arrays.asList(module.getResources(lessRessoucesfolder + "/mixins")));
         compileBootstrap(site, lessResources, variables);
     }
 
@@ -235,7 +235,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
                         File lessFile = new File(tmpLessFolder+(lessResource.getURI().toString().endsWith("mixins/"+lessResource.getFilename())?"/mixins":""), lessResource.getFilename());
                         if (!lessFile.exists()) {
                             InputStream inputStream;
-                            if (variables != null && VARIABLES_LESS.equals(lessResource.getFilename())) {
+                            if (variables != null && StringUtils.equals("variables.less", lessResource.getFilename())) {
                                 inputStream = new SequenceInputStream(lessResource.getInputStream(), new ByteArrayInputStream(variables.getBytes()));
                             } else {
                                 inputStream = lessResource.getInputStream();
@@ -295,6 +295,11 @@ public class BootstrapCompiler implements JahiaModuleAware {
         }
     }
 
+    private List<String> addLessRessources(List<Resource> lessResources, String variables, File tmpLessFolder, boolean templatesLessFiles) throws IOException {
+        List<String> allContent = new ArrayList<>();
+        return allContent;
+    }
+
     public void publish(AddedNodeFact nodeFact) throws RepositoryException {
         publishBootstrapFolder(nodeFact.getNode());
     }
@@ -314,6 +319,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
 
     public void setPublicationService(JCRPublicationService publicationService) {
         this.publicationService = publicationService;
+    }
+
+    public void setDefaultLessRessoucesfolder(String defaultLessRessoucesfolder) {
+        this.defaultLessRessoucesfolder = defaultLessRessoucesfolder;
     }
 
     @Override

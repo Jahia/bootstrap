@@ -33,7 +33,8 @@
 </c:if>
 
 <h1 id="header${renderContext.mainResource.node.identifier}"><fmt:message key="siteSettings.label.bootstrap"/></h1>
-
+    <jcr:node path="/modules/${renderContext.site.templatePackage.idWithVersion}/templates" var="templatesNode"/>
+<h2>you are using <strong>bootstrap ${templatesNode.properties['bootstrapVersion'].string eq 'less3' ? '3' : '2'}</strong></h2>
 <form id="customizeBootstrap${renderContext.mainResource.node.identifier}"
     action="<c:url value='${url.base}${renderContext.site.path}.customizeBootstrap.do'/>" method="post"
     onsubmit="workInProgress('${i18nWaiting}')">

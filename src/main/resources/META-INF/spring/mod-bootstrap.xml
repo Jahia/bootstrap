@@ -9,6 +9,7 @@
         <property name="lessCompiler" ref="LessCompiler" />
         <property name="jahiaTemplateManagerService" ref="JahiaTemplateManagerService" />
         <property name="publicationService" ref="jcrPublicationService"/>
+        <property name="defaultLessRessoucesfolder" value="less2"/>
     </bean>
 
     <bean class="org.jahia.modules.bootstrap.actions.CustomizeBootstrapAction">
