@@ -9,4 +9,4 @@
 
 [jmix:bootstrapVersion] mixin
  extends = jnt:templatesFolder
- - bootstrapVersion (string, choicelist) = less2 < less2,less3
+ - bootstrapVersion (string, choicelist[resourceBundle]) = 'less2' < 'less2', 'less3'

@@ -76,6 +76,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
 
     private static final String CSS_FOLDER_PATH = "files/bootstrap/css";
     private static final String BOOTSTRAP_CSS = "bootstrap.css";
+    private static final String GLYPHICONS_BS2_FOLDER_PATH = "files/bootstrap/img";
+    private static final String GLYPHICONS_BS2_FOLDER_NAME = "img";
+    private static final String GLYPHICONS_BS3_FOLDER_PATH = "files/bootstrap/fonts";
+    private static final String GLYPHICONS_BS3_FOLDER_NAME = "fonts";
 
     public static String defaultLessRessoucesfolder;
 
@@ -133,6 +137,11 @@ public class BootstrapCompiler implements JahiaModuleAware {
                 } catch (IOException | LessException e) {
                     log.error(e.getMessage(), e);
                 }
+                // Add Glyphicons
+                String glyphiconsPath = (lessRessoucesfolder.equals(defaultLessRessoucesfolder)) ? GLYPHICONS_BS2_FOLDER_PATH : GLYPHICONS_BS3_FOLDER_PATH;
+                String glyphiconsFolderToRemove = (lessRessoucesfolder.equals(defaultLessRessoucesfolder)) ? GLYPHICONS_BS3_FOLDER_NAME : GLYPHICONS_BS2_FOLDER_NAME;
+                copyGlyphicons(glyphiconsPath, glyphiconsFolderToRemove, templatesSetNode, session);
+
                 // copy on all sites using this templateSet, that don't have any custom variables
                 QueryManager qm = session.getWorkspace().getQueryManager();
                 QueryResult result = qm.createQuery("SELECT * FROM [jnt:virtualsite] WHERE [j:templatesSet] = '" + templatesSet.getId() + "'", Query.JCR_SQL2).execute();
@@ -142,6 +151,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
                     if (!site.getAllInstalledModules().contains("bootstrap") || !site.hasNode(CustomizeBootstrapAction.BOOTSTRAP_VARIABLES)) {
                         copyBootstrapCSS(templatesSet.getRootFolderPath() + "/" + templatesSet.getVersion().toString() + "/" + CSS_FOLDER_PATH + "/" + BOOTSTRAP_CSS,
                                 site, session);
+                        copyGlyphicons(glyphiconsPath, glyphiconsFolderToRemove, site, session);
                     }
                 }
                 if (sites.getSize() > 0) {
@@ -167,6 +177,31 @@ public class BootstrapCompiler implements JahiaModuleAware {
             }
             session.getNode(srcCssPath).copy(dstCss.getPath());
             session.save();
+        }
+    }
+
+    private void copyGlyphicons(String glyphiconsPath, String glyphiconsFolderToRemove, JCRNodeWrapper siteOrModuleVersion, JCRSessionWrapper session) throws RepositoryException {
+        JCRNodeWrapper node = siteOrModuleVersion;
+        for (String pathPart : StringUtils.split(glyphiconsPath, '/')) {
+            if (node.hasNode(pathPart)) {
+                node = node.getNode(pathPart);
+            } else {
+                node = node.addNode(pathPart, "jnt:folder");
+            }
+        }
+
+        // Remove other version if changed
+        if (node.getParent().hasNode(glyphiconsFolderToRemove)) {
+            node.getParent().getNode(glyphiconsFolderToRemove).remove();
+            session.save();
+        }
+
+        JCRNodeWrapper originalGlyphiconsFolderNode = session.getNode(module.getRootFolderPath() + "/" + module.getVersion() + "/" + glyphiconsPath);
+        for (JCRNodeWrapper glyphiconsFile : originalGlyphiconsFolderNode.getNodes()) {
+            if (!node.hasNode(glyphiconsFile.getName())) {
+                glyphiconsFile.copy(node.getPath());
+                session.save();
+            }
         }
     }
 
