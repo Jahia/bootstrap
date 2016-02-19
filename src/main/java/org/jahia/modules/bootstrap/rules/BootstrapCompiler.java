@@ -123,7 +123,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
             @Override
             public Object doInJCR(JCRSessionWrapper session) throws RepositoryException {
                 JCRNodeWrapper templatesSetNode = session.getNode("/modules/" + templatesSet.getIdWithVersion());
-                ArrayList<Resource> lessResources = new ArrayList<>();
+                ArrayList<Resource> lessResources = new ArrayList<Resource>();
                 for (JahiaTemplatesPackage aPackage : templatesSet.getDependencies()) {
                     lessResources.addAll(Arrays.asList(aPackage.getResources("/less")));
                     lessResources.addAll(Arrays.asList(aPackage.getResources("/less/mixins")));
@@ -134,7 +134,9 @@ public class BootstrapCompiler implements JahiaModuleAware {
                 lessResources.addAll(Arrays.asList(module.getResources(lessRessoucesfolder+"/mixins")));
                 try {
                     compileBootstrap(templatesSetNode, lessResources, null);
-                } catch (IOException | LessException e) {
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                } catch (LessException e) {
                     log.error(e.getMessage(), e);
                 }
                 // Add Glyphicons
@@ -303,7 +305,7 @@ public class BootstrapCompiler implements JahiaModuleAware {
     }
 
     private List<String> addLessRessources(List<Resource> lessResources, String variables, File tmpLessFolder, boolean templatesLessFiles) throws IOException {
-        List<String> allContent = new ArrayList<>();
+        List<String> allContent = new ArrayList<String>();
         return allContent;
     }
 
