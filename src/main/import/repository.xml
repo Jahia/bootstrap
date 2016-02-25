@@ -15,6 +15,9 @@
                             <bootstrap.css jcr:primaryType="jnt:file">
                                 <jcr:content jcr:mimeType="text/css" jcr:primaryType="jnt:resource"/>
                             </bootstrap.css>
+                            <bootstrap3.css jcr:primaryType="jnt:file">
+                                <jcr:content jcr:mimeType="text/css" jcr:primaryType="jnt:resource"/>
+                            </bootstrap3.css>
                         </css>
                         <img jcr:primaryType="jnt:folder">
                             <glyphicons-halflings-white.png j:height="159"
@@ -34,7 +37,7 @@
                         </img>
                         <fonts jcr:primaryType="jnt:folder">
                             <glyphicons-halflings-regular.svg jcr:mixinTypes="jmix:image" jcr:primaryType="jnt:file">
-                                <jcr:content j:lastExtractionDate="2015-12-29T23:22:10.081+01:00"
+                                <jcr:content j:lastExtractionDate="2016-02-24T18:02:27.499+01:00"
                                   jcr:mimeType="image/svg+xml"
                                   jcr:primaryType="jnt:resource"/>
                             </glyphicons-halflings-regular.svg>

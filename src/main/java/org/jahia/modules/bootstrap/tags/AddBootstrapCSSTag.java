@@ -44,17 +44,25 @@
 package org.jahia.modules.bootstrap.tags;
 
 import org.jahia.data.templates.JahiaTemplatesPackage;
+import org.jahia.services.content.JCRNodeWrapper;
 import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.render.RenderContext;
 import org.jahia.services.render.URLGenerator;
 import org.jahia.taglibs.AbstractJahiaTag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.jcr.RepositoryException;
 import javax.servlet.jsp.JspException;
 import java.util.List;
 
 public class AddBootstrapCSSTag extends AbstractJahiaTag {
-    public static final String CSS_NAME = "bootstrap.css";
-    public static final String CSS_PATH = "/files/bootstrap/css/" + CSS_NAME;
+    private static final Logger logger = LoggerFactory.getLogger(AddBootstrapCSSTag.class);
+
+    public static final String BOOTSTRAP2_CSS_NAME = "bootstrap.css";
+    public static final String BOOTSTRAP3_CSS_NAME = "bootstrap3.css";
+    public static final String BOOTSTRAP2_CSS_PATH = "/files/bootstrap/css/" + BOOTSTRAP2_CSS_NAME;
+    public static final String BOOTSTRAP3_CSS_PATH = "/files/bootstrap/css/" + BOOTSTRAP3_CSS_NAME;
 
     @Override
     public int doEndTag() throws JspException {
@@ -62,12 +70,14 @@ public class AddBootstrapCSSTag extends AbstractJahiaTag {
             RenderContext renderContext = getRenderContext();
             JCRSiteNode site = renderContext.getSite();
             String basePath = site.getPath();
+            boolean isVersion2 = true;
             if (basePath.startsWith("/modules/")) {
                 basePath = "/modules/" + site.getTemplatePackage().getIdWithVersion();
-                if (!site.getSession().nodeExists(basePath + CSS_PATH)) {
+                if (!site.getSession().nodeExists(basePath + BOOTSTRAP2_CSS_PATH)) {
                     List<JahiaTemplatesPackage> dependencies = site.getTemplatePackage().getDependencies();
                     for (JahiaTemplatesPackage dependency : dependencies) {
                         if ("bootstrap".equals(dependency.getId())) {
+                            isVersion2 = isBootstrapVersion2(site, basePath);
                             basePath = "/modules/" + dependency.getIdWithVersion();
                             break;
                         }
@@ -75,12 +85,25 @@ public class AddBootstrapCSSTag extends AbstractJahiaTag {
                 }
             }
             URLGenerator urlGenerator = renderContext.getURLGenerator();
-            String path = urlGenerator.getContext() + urlGenerator.getFiles() + basePath + CSS_PATH;
-            String tag = "<jahia:resource type=\"css\" path=\"" + path + "\" insert=\"true\" resource=\"" + CSS_NAME + "\" title=\"\" key=\"\" />\n";
+            String path = urlGenerator.getContext() + urlGenerator.getFiles() + basePath + ((isVersion2)?BOOTSTRAP2_CSS_PATH:BOOTSTRAP3_CSS_PATH);
+            String tag = "<jahia:resource type=\"css\" path=\"" + path + "\" insert=\"true\" resource=\"" + ((isVersion2)?BOOTSTRAP2_CSS_NAME:BOOTSTRAP3_CSS_NAME) + "\" title=\"\" key=\"\" />\n";
             pageContext.getOut().print(tag);
         } catch (Exception e) {
             throw new JspException("Failed to write jahia:resource tag for bootstrap", e);
         }
         return super.doEndTag();
+    }
+
+    private boolean isBootstrapVersion2(JCRSiteNode site, String basePath) {
+        try {
+            JCRNodeWrapper currentModule = site.getSession().getNode(basePath);
+            if (currentModule.hasNode("templates")) {
+                JCRNodeWrapper templatesFolder = currentModule.getNode("templates");
+                return !(templatesFolder.hasProperty("bootstrapVersion") && templatesFolder.getProperty("bootstrapVersion").getString().equals("less3"));
+            }
+        } catch (RepositoryException e) {
+            logger.error(e.getMessage());
+        }
+        return true;
     }
 }

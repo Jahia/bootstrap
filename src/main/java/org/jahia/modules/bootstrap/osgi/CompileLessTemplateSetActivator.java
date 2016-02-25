@@ -69,7 +69,7 @@ import java.util.List;
 public class CompileLessTemplateSetActivator implements BundleActivator {
 
     private static final Logger log = LoggerFactory.getLogger(CompileLessTemplateSetActivator.class);
-        private BundleContext context;
+    private BundleContext context;
 
     /**
      * Called when this bundle is started so the Framework can perform the
