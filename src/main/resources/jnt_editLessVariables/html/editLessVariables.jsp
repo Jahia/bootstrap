@@ -21,20 +21,22 @@
     <fmt:message key="label.workInProgressTitle" var="i18nWaiting"/><c:set var="i18nWaiting" value="${functions:escapeJavaScript(i18nWaiting)}"/>
     <fmt:message key="siteSettings.bootstrap.reset.confirm" var="resetConfirm"/>
 
-    <c:set var="formview" value="${currentNode.properties.formview.string}"/>
-    <c:if test="${formview ne 'advanced'}">
-        <c:set var="switchFormUrl" value="${url.base}${renderContext.mainResource.node.path}.${renderContext.mainResource.template}.html"/>
-        <c:if test="${empty param.formview}">
-            <a class="btn btn-small pull-right" href="<c:url value='${switchFormUrl}?formview=advanced'/>"><i class="icon-resize-full"></i> <fmt:message key="siteSettings.label.bootstrap.form.advanced"/></a>
-        </c:if>
-        <c:if test="${not empty param.formview}">
-            <a class="btn btn-small pull-right" href="<c:url value='${switchFormUrl}'/>"><i class="icon-resize-small"></i> <fmt:message key="siteSettings.label.bootstrap.form.simple"/></a>
-        </c:if>
-    </c:if>
-
     <div class="page-header">
         <jcr:node path="/modules/${renderContext.site.templatePackage.idWithVersion}/templates" var="templatesNode"/>
-        <h1 id="header${renderContext.mainResource.node.identifier}"><fmt:message key="siteSettings.label.bootstrap"/><small style="color:black;"> - Bootstrap version ${templatesNode.properties['bootstrapVersion'].string eq 'less3' ? '3' : '2'}</small></h1>
+        <h1 id="header${renderContext.mainResource.node.identifier}"><fmt:message key="siteSettings.label.bootstrap"/><small style="color:black;"> - Bootstrap version ${templatesNode.properties['bootstrapVersion'].string eq 'less3' ? '3' : '2'}</small>
+
+        <c:set var="formview" value="${currentNode.properties.formview.string}"/>
+        <c:if test="${formview ne 'advanced'}">
+            <c:set var="switchFormUrl" value="${url.base}${renderContext.mainResource.node.path}.${renderContext.mainResource.template}.html"/>
+            <c:if test="${empty param.formview}">
+                <a class="btn btn-small pull-right" href="<c:url value='${switchFormUrl}?formview=advanced'/>"><i class="icon-resize-full"></i> <fmt:message key="siteSettings.label.bootstrap.form.advanced"/></a>
+            </c:if>
+            <c:if test="${not empty param.formview}">
+                <a class="btn btn-small pull-right" href="<c:url value='${switchFormUrl}'/>"><i class="icon-resize-small"></i> <fmt:message key="siteSettings.label.bootstrap.form.simple"/></a>
+            </c:if>
+        </c:if>
+
+        </h1>
     </div>
 
 

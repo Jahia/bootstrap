@@ -97,7 +97,6 @@ public class BootstrapCompiler implements JahiaModuleAware {
         try {
             JCRTemplate.getInstance().doExecuteWithSystemSession(new JCRCallback<Object>() {
                 public Object doInJCR(JCRSessionWrapper session) throws RepositoryException {
-
                     JCRNodeWrapper moduleVersion = session.getNode("/modules/" + module.getIdWithVersion());
                     ArrayList<Resource> lessResources = new ArrayList<Resource>(Arrays.asList(module.getResources(defaultLessRessoucesfolder)));
                     lessResources.addAll(Arrays.asList(module.getResources(defaultLessRessoucesfolder + "/mixins")));
@@ -123,15 +122,12 @@ public class BootstrapCompiler implements JahiaModuleAware {
             @Override
             public Object doInJCR(JCRSessionWrapper session) throws RepositoryException {
                 JCRNodeWrapper templatesSetNode = session.getNode("/modules/" + templatesSet.getIdWithVersion());
-                ArrayList<Resource> lessResources = new ArrayList<Resource>();
-                for (JahiaTemplatesPackage aPackage : templatesSet.getDependencies()) {
-                    lessResources.addAll(Arrays.asList(aPackage.getResources("/less")));
-                    lessResources.addAll(Arrays.asList(aPackage.getResources("/less/mixins")));
-                }
 
-                String lessRessoucesfolder = templatesSetNode.hasNode("templates") && templatesSetNode.getNode("templates").hasProperty("bootstrapVersion")?templatesSetNode.getNode("templates").getPropertyAsString("bootstrapVersion"):defaultLessRessoucesfolder;
+                ArrayList<Resource> lessResources = new ArrayList<Resource>();
+                String lessRessoucesfolder = getBootstrapLessFolder(templatesSetNode);
                 lessResources.addAll(Arrays.asList(module.getResources(lessRessoucesfolder)));
                 lessResources.addAll(Arrays.asList(module.getResources(lessRessoucesfolder+"/mixins")));
+
                 try {
                     compileBootstrap(templatesSetNode, lessResources, null);
                 } catch (IOException e) {
@@ -212,21 +208,11 @@ public class BootstrapCompiler implements JahiaModuleAware {
             return;
         }
 
-        Set<JahiaTemplatesPackage> packages = new TreeSet<JahiaTemplatesPackage>(TemplatePackageRegistry.TEMPLATE_PACKAGE_COMPARATOR);
-        for (String s : site.getInstalledModulesWithAllDependencies()) {
-            packages.add(jahiaTemplateManagerService.getTemplatePackageById(s));
-        }
-        packages.remove(module);
-        ArrayList<Resource> lessResources = new ArrayList<Resource>();
-        for (JahiaTemplatesPackage aPackage : packages) {
-            lessResources.addAll(Arrays.asList(aPackage.getResources("/less")));
-            lessResources.addAll(Arrays.asList(aPackage.getResources("/less/mixins")));
-        }
         JCRNodeWrapper templatesSetNode = site.getSession().getNode("/modules/" + site.getTemplatePackage().getIdWithVersion());
 
         // Add default
-
-        String lessRessoucesfolder = templatesSetNode.hasNode("templates") && templatesSetNode.getNode("templates").hasProperty("bootstrapVersion")?templatesSetNode.getNode("templates").getPropertyAsString("bootstrapVersion"):defaultLessRessoucesfolder;
+        ArrayList<Resource> lessResources = new ArrayList<Resource>();
+        String lessRessoucesfolder = getBootstrapLessFolder(templatesSetNode);
         lessResources.addAll(Arrays.asList(module.getResources(lessRessoucesfolder)));
         lessResources.addAll(Arrays.asList(module.getResources(lessRessoucesfolder + "/mixins")));
         compileBootstrap(site, lessResources, variables);
@@ -302,6 +288,10 @@ public class BootstrapCompiler implements JahiaModuleAware {
                 FileUtils.deleteQuietly(tmpLessFolder);
             }
         }
+    }
+
+    private String getBootstrapLessFolder(JCRNodeWrapper templatesSetNode) throws RepositoryException {
+        return templatesSetNode.hasNode("templates") && templatesSetNode.getNode("templates").hasProperty("bootstrapVersion")?templatesSetNode.getNode("templates").getPropertyAsString("bootstrapVersion"):defaultLessRessoucesfolder;
     }
 
     private List<String> addLessRessources(List<Resource> lessResources, String variables, File tmpLessFolder, boolean templatesLessFiles) throws IOException {

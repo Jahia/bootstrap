@@ -7,7 +7,6 @@ import org.jahia.registries.ServicesRegistry
 import org.jahia.services.content.JCRNodeWrapper
 import org.jahia.services.content.decorator.JCRSiteNode
 import org.jahia.services.templates.JahiaTemplateManagerService
-import org.jahia.services.templates.TemplatePackageRegistry
 import org.springframework.core.io.Resource
 
 import java.text.CharacterIterator
@@ -75,28 +74,15 @@ def printInput(String line, JCRNodeWrapper variablesNode) {
 
 JCRSiteNode site = renderContext.mainResource.node.resolveSite
 JahiaTemplateManagerService jahiaTemplateManagerService = ServicesRegistry.getInstance().getJahiaTemplateManagerService()
-Set<JahiaTemplatesPackage> packages = new TreeSet<JahiaTemplatesPackage>(TemplatePackageRegistry.TEMPLATE_PACKAGE_COMPARATOR);
-for (String s : site.getInstalledModulesWithAllDependencies()) {
-    packages.add(jahiaTemplateManagerService.getTemplatePackageById(s));
-}
 
 JahiaTemplatesPackage bootstrapModule = jahiaTemplateManagerService.getTemplatePackageById("bootstrap")
-packages.remove(bootstrapModule);
-def variables
-String lessRessoucesfolder = "less2"
-for (JahiaTemplatesPackage aPackage : packages) {
-    variables = getVariables(aPackage,"less/variables.less")
-    if (variables != null) {
-        break;
-    }
-}
 
-if (variables == null) {
-    if (bootstrapModule != null) {
-        JCRNodeWrapper templatesSetNode = site.session.getNode("/modules/" + site.getTemplatePackage().getIdWithVersion());
-        lessRessoucesfolder = templatesSetNode.hasNode("templates") && templatesSetNode.getNode("templates").hasProperty("bootstrapVersion")?templatesSetNode.getNode("templates").getPropertyAsString("bootstrapVersion"):BootstrapCompiler.defaultLessRessoucesfolder;
-        variables = getVariables(bootstrapModule, lessRessoucesfolder + "/variables.less")
-    }
+String lessResourcesfolder = "less2"
+def variables
+if (bootstrapModule != null) {
+    JCRNodeWrapper templatesSetNode = site.session.getNode("/modules/" + site.getTemplatePackage().getIdWithVersion());
+    lessResourcesfolder = templatesSetNode.hasNode("templates") && templatesSetNode.getNode("templates").hasProperty("bootstrapVersion")?templatesSetNode.getNode("templates").getPropertyAsString("bootstrapVersion"):BootstrapCompiler.defaultLessRessoucesfolder;
+    variables = getVariables(bootstrapModule, lessResourcesfolder + "/variables.less")
 }
 
 if (variables != null) {
@@ -106,7 +92,7 @@ if (variables != null) {
     }
 
     def isFieldsetOpen = false
-    if (lessRessoucesfolder.equals("less2")) {
+    if (lessResourcesfolder.equals("less2")) {
         def previousLine
         variables.eachLine { line, count ->
             if (line.startsWith("//") && line.length() > 2) {
@@ -146,7 +132,7 @@ if (variables != null) {
         if (isFieldsetOpen) {
             println "</fieldset>"
         }
-    } else if (lessRessoucesfolder.equals("less3")) {
+    } else if (lessResourcesfolder.equals("less3")) {
         println '<div class="accordion" id="accordionParent">'
         def isFirst = true
         variables.eachLine { line, count ->
