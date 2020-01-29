@@ -49,11 +49,11 @@
   <parent>
     <groupId>org.jahia.modules</groupId>
     <artifactId>jahia-modules</artifactId>
-    <version>7.0.0.0</version>
+    <version>7.5.0.0-SNAPSHOT</version>
   </parent>
   <groupId>org.jahia.modules</groupId>
   <artifactId>bootstrap</artifactId>
-  <version>2.0.4-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <name>Jahia Bootstrap</name>
   <description>Integration of Twitter Bootstrap http://twitter.github.io/bootstrap/</description>
@@ -107,6 +107,7 @@
             <Import-Package>com.ibm.uvm.tools;resolution:=optional, com.sun.jdmk.comm;resolution:=optional, javax.jmdns;resolution:=optional, org.apache.avalon.framework.logger;resolution:=optional, org.apache.log;resolution:=optional, sun.security.util;resolution:=optional,${jahia.plugin.projectPackageImport},*</Import-Package>
             <Export-Package>org.jahia.modules.bootstrap.tags</Export-Package>
             <Jahia-Depends>default,siteSettings,skins</Jahia-Depends>
+            <Jahia-Signature>MCwCFBQIQKMtE9toPP6SYq5mBJ6qVmNgAhQ8T4nL88K4TJ2Usc4EcigOHsGURA==</Jahia-Signature>
           </instructions>
         </configuration>
       </plugin>
