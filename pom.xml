@@ -7,7 +7,7 @@
 
                                     http://www.jahia.com
 
-        Copyright (C) 2002-2019 Jahia Solutions Group SA. All rights reserved.
+        Copyright (C) 2002-2020 Jahia Solutions Group SA. All rights reserved.
 
         THIS FILE IS AVAILABLE UNDER TWO DIFFERENT LICENSES:
         1/GPL OR 2/JSEL
@@ -49,11 +49,10 @@
   <parent>
     <groupId>org.jahia.modules</groupId>
     <artifactId>jahia-modules</artifactId>
-    <version>8.0.0.0-SNAPSHOT</version>
+    <version>8.0.0.0</version>
   </parent>
-  <groupId>org.jahia.modules</groupId>
   <artifactId>bootstrap</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
+  <version>3.0.0</version>
   <packaging>bundle</packaging>
   <name>Jahia Bootstrap</name>
   <description>Integration of Twitter Bootstrap http://twitter.github.io/bootstrap/</description>
