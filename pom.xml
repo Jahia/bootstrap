@@ -52,7 +52,7 @@
     <version>8.0.0.0</version>
   </parent>
   <artifactId>bootstrap</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <name>Jahia Bootstrap</name>
   <description>Integration of Twitter Bootstrap http://twitter.github.io/bootstrap/</description>
@@ -60,7 +60,7 @@
     <connection>scm:git:git@github.com:Jahia/bootstrap.git</connection>
     <developerConnection>scm:git:git@github.com:Jahia/bootstrap.git</developerConnection>
     <url>scm:git:git@github.com:Jahia/bootstrap</url>
-    <tag>3_0_0</tag>
+    <tag>HEAD</tag>
   </scm>
   <properties>
     <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)"</require-capability>
