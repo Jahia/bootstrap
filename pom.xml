@@ -109,7 +109,7 @@
             <Import-Package>com.ibm.uvm.tools;resolution:=optional, com.sun.jdmk.comm;resolution:=optional, javax.jmdns;resolution:=optional, org.apache.avalon.framework.logger;resolution:=optional, org.apache.log;resolution:=optional, sun.security.util;resolution:=optional,${jahia.plugin.projectPackageImport},*</Import-Package>
             <Export-Package>org.jahia.modules.bootstrap.tags</Export-Package>
             <Jahia-Depends>default,siteSettings,skins</Jahia-Depends>
-            <Jahia-Signature>MCwCFBQIQKMtE9toPP6SYq5mBJ6qVmNgAhQ8T4nL88K4TJ2Usc4EcigOHsGURA==</Jahia-Signature>
+            <Jahia-Signature>MCwCFFt1hjWwa1YZSTocQLCUz+hIcTogAhREtHQTt4rYBEEPTA49Y3rl1RujmQ==</Jahia-Signature>
           </instructions>
         </configuration>
       </plugin>
